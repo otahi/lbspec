@@ -30,22 +30,25 @@ RSpec::Matchers.define :have_transferred do |nodes|
   def connect_node(node)
     @threads << Thread.new {
       @ssh[node.to_sym] = Net::SSH.start(node, nil, :config => true)
-      channel = @ssh[node.to_sym].open_channel do |ch|
-        channel.request_pty do |ch, success|
+      @ssh[node.to_sym].open_channel do |ch|
+        ch.request_pty do |ch, success|
           raise "Could not obtain pty " if !success
-          channel.exec "sudo ngrep #{@keyword}" do |ch, stream, data|
+          ch.exec "sudo ngrep #{@keyword}" do |ch, stream, data|
             ch.on_data do |c, data|
-              Thread.current[:outdata] ||= ''
-              Thread.current[:outdata] += data
+              if /#{@keyword}/ === data
+                @results.push(true)
+              end
             end
           end
         end
       end
-      ssh.loop
     }
   end
 
   def disconnect_nodes
+    @threads.each do |t|
+      t.kill
+    end
     @ssh.each do |node, ssh|
       ssh.close if ! ssh.closed?
     end
