@@ -1,14 +1,14 @@
 require 'net/ssh'
 require 'rspec/expectations'
 
-RSpec::Matchers.define :have_transferred do |vhost|
+RSpec::Matchers.define :have_transferred do |nodes|
   @ssh = {}
   @threads = []
 
-  match do |nodes|
+  match do |vhost|
     @keyword = gen_keyword
     connect_nodes nodes
-    send_request vhost, 80
+    send_request(vhost, 80)
     sleep 5
     disconnect_nodes
     is_ok?
