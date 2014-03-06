@@ -1,4 +1,4 @@
-require 'net/ssh/multi'
+require 'net/ssh'
 require 'rspec/expectations'
 
 RSpec::Matchers.define :have_transferred do |vhost|
@@ -29,7 +29,7 @@ RSpec::Matchers.define :have_transferred do |vhost|
 
   def connect_node(node)
     @threads << Thread.new {
-      @ssh[node.to_sym] = Net::SSH.start(node, 'otahi', :config => true)
+      @ssh[node.to_sym] = Net::SSH.start(node, nil, :config => true)
       channel = @ssh[node.to_sym].open_channel do |ch|
         channel.request_pty do |ch, success|
           raise "Could not obtain pty " if !success
