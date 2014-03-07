@@ -4,12 +4,13 @@ require 'rspec/expectations'
 RSpec::Matchers.define :transfer do |nodes|
   @ssh = {}
   @threads = []
+  @nodes_connected = []
   @result = false
 
   match do |vhost|
-    @keyword = gen_keyword
+    gen_keyword
     connect_nodes nodes
-    sleep 5
+    wait_nodes_connected nodes
     send_request(vhost, 80)
     disconnect_nodes
     is_ok?
@@ -17,7 +18,16 @@ RSpec::Matchers.define :transfer do |nodes|
 
   def gen_keyword
     t = Time.now
-    t.to_i.to_s + t.nsec.to_s
+    @keyword = t.to_i.to_s + t.nsec.to_s
+  end
+
+  def wait_nodes_connected(nodes)
+    nodes_length = 1
+    nodes_length = nodes.length if nodes.respond_to? :each
+
+    until (@nodes_connected.length == nodes_length) do
+      sleep 0.5
+    end
   end
 
   def connect_nodes(nodes)
@@ -35,6 +45,7 @@ RSpec::Matchers.define :transfer do |nodes|
       ssh.open_channel do |ch|
         ch.request_pty do |ch, success|
           raise "Could not obtain pty " if !success
+          @nodes_connected.push(true)
           ch.exec "sudo ngrep #{@keyword}" do |ch, stream, data|
             ch.on_data do |c, data|
               @result = true if /#{@keyword}/ === data
