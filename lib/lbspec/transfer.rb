@@ -71,4 +71,16 @@ RSpec::Matchers.define :transfer do |nodes|
   def is_ok?
     @result
   end
+
+  description do
+    "transfer requests to #{nodes}."
+  end
+
+  failure_message_for_should do |vhost|
+    "expected #{vhost} to transfer requests to #{nodes}, but did not."
+  end
+
+  failure_message_for_should_not do |vhost|
+    "expected #{vhost} not to transfer requests to #{nodes}, but it did."
+  end
 end
