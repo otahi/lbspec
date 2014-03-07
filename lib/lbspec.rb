@@ -1,5 +1,5 @@
 require 'lbspec/version'
-require 'lbspec/have_transferred'
+require 'lbspec/transfer'
 
 module Lbspec
 end

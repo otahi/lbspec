@@ -1,15 +1,16 @@
 require 'net/ssh'
 require 'rspec/expectations'
 
-RSpec::Matchers.define :have_transferred do |nodes|
+RSpec::Matchers.define :transfer do |nodes|
   @ssh = {}
   @threads = []
+  @result = false
 
   match do |vhost|
     @keyword = gen_keyword
     connect_nodes nodes
-    send_request(vhost, 80)
     sleep 5
+    send_request(vhost, 80)
     disconnect_nodes
     is_ok?
   end
@@ -21,28 +22,27 @@ RSpec::Matchers.define :have_transferred do |nodes|
 
   def connect_nodes(nodes)
     if nodes.respond_to? :each
-      nodes.each { |node| connect_node(node) }
+      nodes.each do |node|
+        @threads << Thread.new { connect_node(node) }
+      end
     else
-      connect_node(nodes)
+      @threads << Thread.new { connect_node(nodes) }
     end
   end
 
   def connect_node(node)
-    @threads << Thread.new {
-      @ssh[node.to_sym] = Net::SSH.start(node, nil, :config => true)
-      @ssh[node.to_sym].open_channel do |ch|
+    @ssh[node.to_sym] = Net::SSH.start(node, nil, :config => true) do |ssh|
+      ssh.open_channel do |ch|
         ch.request_pty do |ch, success|
           raise "Could not obtain pty " if !success
           ch.exec "sudo ngrep #{@keyword}" do |ch, stream, data|
             ch.on_data do |c, data|
-              if /#{@keyword}/ === data
-                @results.push(true)
-              end
+              @result = true if /#{@keyword}/ === data
             end
           end
         end
       end
-    }
+    end
   end
 
   def disconnect_nodes
@@ -58,12 +58,6 @@ RSpec::Matchers.define :have_transferred do |nodes|
     system("echo #{@keyword} | nc #{vhost} #{port}")
   end
   def is_ok?
-    @threads.each do |t|
-      if /#{@keyword}/ === t[:outdata]
-        break true
-      else
-        false
-      end
-    end
+    @result
   end
 end

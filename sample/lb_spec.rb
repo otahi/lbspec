@@ -1,6 +1,6 @@
 require 'spec_helper'
 
 describe 'vhost_a' do
-  it { should have_transferred('node_a') }
-  it { should have_transferred(['node_c','node_b']) }
+  it { should transfer('node_a') }
+  it { should transfer(['node_c','node_b']) }
 end
