@@ -2,6 +2,8 @@
 
 Lbspec is an RSpec plugin for easy Loadbalancer testing.
 
+[![Build Status](https://travis-ci.org/otahi/lbspec.png?branch=master)](https://travis-ci.org/otahi/lbspec)[![Coverage Status](https://coveralls.io/repos/otahi/lbspec/badge.png?branch=master)](https://coveralls.io/r/otahi/lbspec?branch=master)
+
 ## Installation
 
 Add this line to your application's Gemfile:
