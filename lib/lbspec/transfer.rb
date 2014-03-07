@@ -2,7 +2,7 @@ require 'net/ssh'
 require 'rspec/expectations'
 
 RSpec::Matchers.define :transfer do |nodes|
-  @ssh = {}
+  @ssh = []
   @threads = []
   @nodes_connected = []
   @result = false
@@ -41,7 +41,7 @@ RSpec::Matchers.define :transfer do |nodes|
   end
 
   def connect_node(node)
-    @ssh[node.to_sym] = Net::SSH.start(node, nil, :config => true) do |ssh|
+    @ssh.push = Net::SSH.start(node, nil, :config => true) do |ssh|
       ssh.open_channel do |ch|
         ch.request_pty do |ch, success|
           raise "Could not obtain pty " if !success
@@ -60,7 +60,7 @@ RSpec::Matchers.define :transfer do |nodes|
     @threads.each do |t|
       t.kill
     end
-    @ssh.each do |node, ssh|
+    @ssh.each do |ssh|
       ssh.close if ! ssh.closed?
     end
   end
