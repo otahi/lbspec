@@ -1,6 +1,6 @@
 # Lbspec
 
-TODO: Write a gem description
+Lbspec is an RSpec plugin for easy Loadbalancer testing.
 
 ## Installation
 
@@ -16,13 +16,41 @@ Or install it yourself as:
 
     $ gem install lbspec
 
+## Requires
+* Users need to be able to login with ssh to the target nodes.
+* Users need to be able to `sudo` on the target nodes.
+* netcat and ngrep are needed to be installed.
+
+## Limitations
+* Lbspec uses only ssh configuration in ~/.ssh/config
+
 ## Usage
 
-TODO: Write usage instructions here
+Lbspec is best described by example. First, require `lbspec` in your `spec_helper.rb`:
+
+```ruby
+# spec/spec_helper.rb
+require 'rspec'
+require 'lbspec'
+```
+
+Then, create a spec like this:
+
+```ruby
+require_relative 'spec_helper'
+
+describe 'vhost_a' do
+  it { should transfer('node_a') }
+end
+
+describe 'vhost_b' do
+  it { should transfer(['node_b','node_c']) }
+end
+```
 
 ## Contributing
 
-1. Fork it ( http://github.com/<my-github-username>/lbspec/fork )
+1. Fork it ( http://github.com/otahi/lbspec/fork )
 2. Create your feature branch (`git checkout -b my-new-feature`)
 3. Commit your changes (`git commit -am 'Add some feature'`)
 4. Push to the branch (`git push origin my-new-feature`)

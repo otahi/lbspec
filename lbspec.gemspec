@@ -8,9 +8,9 @@ Gem::Specification.new do |spec|
   spec.version       = Lbspec::VERSION
   spec.authors       = ["OTA Hiroshi"]
   spec.email         = ["ota_h@nifty.com"]
-  spec.summary       = %q{TODO: Write a short summary. Required.}
-  spec.description   = %q{TODO: Write a longer description. Optional.}
-  spec.homepage      = ""
+  spec.summary       = "Easily test your Loadbalancers with RSpec."
+  spec.description   = "Lbspec is an RSpec plugin for easy Loadbalancer testing."
+  spec.homepage      = "https://github.com/otahi/lbspec"
   spec.license       = "MIT"
 
   spec.files         = `git ls-files -z`.split("\x0")

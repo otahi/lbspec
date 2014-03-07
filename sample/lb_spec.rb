@@ -1,4 +1,4 @@
-require 'spec_helper'
+require_relative 'spec_helper'
 
 describe 'vhost_a' do
   it { should transfer('node_a') }
