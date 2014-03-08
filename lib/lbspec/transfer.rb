@@ -1,3 +1,4 @@
+# -*- encoding: utf-8 -*-
 require 'net/ssh'
 require 'rspec/expectations'
 
@@ -14,7 +15,7 @@ RSpec::Matchers.define :transfer do |nodes|
     wait_nodes_connected nodes
     send_request(vhost, 80)
     disconnect_nodes
-    is_ok?
+    @result
   end
 
   def gen_keyword
@@ -30,32 +31,34 @@ RSpec::Matchers.define :transfer do |nodes|
     nodes_length = 1
     nodes_length = nodes.length if nodes.respond_to? :each
 
-    until (@nodes_connected.length == nodes_length) do
-      sleep 0.5
-    end
+    sleep 0.5 until @nodes_connected.length == nodes_length
   end
 
   def connect_nodes(nodes)
     if nodes.respond_to? :each
-      nodes.each do |node|
-        @threads << Thread.new { connect_node(node) }
-      end
+      nodes.each { |node| connect_node(node) }
     else
-      @threads << Thread.new { connect_node(nodes) }
+      connect_node(nodes)
     end
   end
 
   def connect_node(node)
-    Net::SSH.start(node, nil, :config => true) do |ssh|
-      ssh.open_channel do |ch|
-        ch.request_pty do |ch, success|
-          raise "Could not obtain pty " if !success
-          @nodes_connected.push(true)
-          ch.exec "sudo ngrep #{@keyword}" do |ch, stream, data|
-            ch.on_data do |c, data|
-              @result = true if /#{@keyword}/ === data
-            end
-          end
+    @threads << Thread.new do
+      Net::SSH.start(node, nil, :config => true) do |ssh|
+        ssh.open_channel do |channel|
+          run_check channel
+        end
+      end
+    end
+  end
+
+  def run_check(channel)
+    channel.request_pty do |chan, success|
+      fail 'Could not obtain pty' unless success
+      @nodes_connected.push(true)
+      chan.exec "sudo ngrep #{@keyword}" do |ch, stream, data|
+        ch.on_data do |c, d|
+          @result = true if /#{@keyword}/ =~ d
         end
       end
     end
@@ -66,16 +69,12 @@ RSpec::Matchers.define :transfer do |nodes|
       t.kill
     end
     @ssh.each do |ssh|
-      ssh.close if ! ssh.closed?
+      ssh.close unless ssh.closed?
     end
   end
 
   def send_request(vhost, port)
     system("echo #{@keyword} | nc #{vhost} #{port}")
-  end
-
-  def is_ok?
-    @result
   end
 
   description do

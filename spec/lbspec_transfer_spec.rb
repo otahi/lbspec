@@ -1,7 +1,6 @@
+# -*- encoding: utf-8 -*-
 require 'spec_helper'
 require 'net/ssh'
-
-
 
 describe Lbspec do
   describe '#transfer' do
@@ -21,7 +20,7 @@ describe Lbspec do
       'vhost_a'.should transfer('node_a')
     end
     it 'should test transfer nodes' do
-      'vhost_a'.should transfer(['node_a','node_b'])
+      'vhost_a'.should transfer(%w{node_a node_b})
     end
   end
 end
