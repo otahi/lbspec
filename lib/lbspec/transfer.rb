@@ -7,14 +7,16 @@ RSpec::Matchers.define :transfer do |nodes|
   @ssh = []
   @threads = []
   @nodes_connected = []
+  @vhost_port = 80
+  @node_port = 0
   @result = false
   Thread.abort_on_exception = true
 
   match do |vhost|
     @keyword = gen_keyword
-    connect_nodes nodes
+    capture_on_nodes nodes
     wait_nodes_connected nodes
-    send_request(vhost, 80)
+    send_request vhost
     disconnect_nodes
     @result
   end
@@ -24,27 +26,25 @@ RSpec::Matchers.define :transfer do |nodes|
   end
 
   def wait_nodes_connected(nodes)
-    nodes_length = 1
-    nodes_length = nodes.length if nodes.respond_to? :each
-
+    nodes_length = (nodes.respond_to? :each) ? nodes.length : 1
     sleep 0.5 until @nodes_connected.length == nodes_length
   end
 
-  def connect_nodes(nodes)
+  def capture_on_nodes(nodes)
     if nodes.respond_to? :each
-      nodes.each { |node| connect_node(node) }
+      nodes.each { |node| capture_on_node(node) }
     else
-      connect_node(nodes)
+      capture_on_node(nodes)
     end
   end
 
-  def connect_node(node)
+  def capture_on_node(node)
     @threads << Thread.new do
+      @node_port = node.split(':').last.to_i if /:\d+/ =~ node
+      node = node.split(':').first
       Net::SSH.start(node, nil, :config => true) do |ssh|
         @ssh << ssh
-        ssh.open_channel do |channel|
-          run_check channel
-        end
+        ssh.open_channel { |channel| run_check channel }
       end
     end
   end
@@ -53,15 +53,29 @@ RSpec::Matchers.define :transfer do |nodes|
     channel.request_pty do |chan, success|
       fail 'Could not obtain pty' unless success
       @nodes_connected.push(true)
-      chan.exec "sudo ngrep #{@keyword}" do |ch, stream, data|
-        ch.on_data do |c, d|
-          @result = true if /#{@keyword}/ =~ d
-        end
+      exec_capture(chan, capture_cmd)
+    end
+  end
+
+  def exec_capture(channel, command)
+    channel.exec capture_cmd do |ch, stream, data|
+      num_match = 0
+      ch.on_data do |c, d|
+        # because of ngrep output condition first
+        # to avoid incorrect match, count 2
+        num_match += 1 if /#{@keyword}/ =~ d
+        @result = true if num_match > 1
       end
     end
   end
 
+  def capture_cmd
+    port_str = @node_port > 0 ? "port #{@node_port}" : ''
+    "sudo ngrep #{@keyword} #{port_str}"
+  end
+
   def disconnect_nodes
+    sleep 1
     @threads.each do |t|
       t.kill
     end
@@ -70,8 +84,8 @@ RSpec::Matchers.define :transfer do |nodes|
     end
   end
 
-  def send_request(vhost, port)
-    system("echo #{@keyword} | nc #{vhost} #{port}")
+  def send_request(vhost)
+    system("echo #{@keyword} | nc #{vhost} #{@vhost_port}")
   end
 
   description do
