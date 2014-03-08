@@ -54,6 +54,18 @@ describe 'vhost_c:80' do
   it { should transfer(['node_b','node_c']).port(80) }
 end
 
+describe 'vhost_c:80' do
+  it { should transfer(['node_b','node_c']).port(53).udp }
+end
+
+describe 'vhost_c:80' do
+  it { should transfer('node_c').http.path('/test/') }
+end
+
+describe 'vhost_c:443' do
+  it { should transfer(['node_b','node_c']).port(80).https.path('/test/') }
+end
+
 ```
 
 ## Contributing
