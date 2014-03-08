@@ -63,17 +63,15 @@ RSpec::Matchers.define :transfer do |nodes|
     channel.exec capture_cmd do |ch, stream, data|
       num_match = 0
       ch.on_data do |c, d|
-        # because of ngrep output condition first
-        # to avoid incorrect match, count 2
         num_match += 1 if /#{@keyword}/ =~ d
-        @result = true if num_match > 1
+        @result = true if num_match > 0
       end
     end
   end
 
   def capture_cmd
     port_str = @node_port > 0 ? "port #{@node_port}" : ''
-    "sudo ngrep #{@keyword} #{port_str}"
+    "sudo ngrep #{@keyword} #{port_str} | grep -v \"match:\""
   end
 
   def disconnect_nodes
