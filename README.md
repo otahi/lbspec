@@ -49,6 +49,11 @@ end
 describe 'vhost_b' do
   it { should transfer(['node_b','node_c']) }
 end
+
+describe 'vhost_c:80' do
+  it { should transfer(['node_b','node_c']).port(80) }
+end
+
 ```
 
 ## Contributing
