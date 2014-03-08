@@ -36,7 +36,7 @@ task :release do |t|
   sh('gem build lbspec.gemspec')
   if agree("Shall we continue? ( yes or no )")
     puts "Pushing gem..."
-    sh('gem push')
+    sh("gem push lbspec-#{version_new}.gem")
   else
     puts "Exiting"
   end
