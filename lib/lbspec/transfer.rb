@@ -41,6 +41,7 @@ RSpec::Matchers.define :transfer do |nodes|
   def connect_node(node)
     @threads << Thread.new do
       Net::SSH.start(node, nil, :config => true) do |ssh|
+        @ssh << ssh
         ssh.open_channel do |channel|
           run_check channel
         end
