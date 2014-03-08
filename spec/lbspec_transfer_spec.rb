@@ -26,7 +26,10 @@ describe Lbspec do
       'vhost_a'.should transfer(%w{node_a node_b})
     end
     it 'should test transfer a node on port 80' do
-      'vhost_a'.should transfer('node_a:80')
+      'vhost_a'.should transfer('node_a').port(80)
+    end
+    it 'should test transfer vhost:80 and a node on port 80' do
+      'vhost_a:80'.should transfer('node_a').port(80)
     end
   end
 end

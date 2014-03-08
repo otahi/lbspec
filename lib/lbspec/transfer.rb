@@ -21,6 +21,10 @@ RSpec::Matchers.define :transfer do |nodes|
     @result
   end
 
+  chain :port do |port|
+    @node_port = port
+  end
+
   def gen_keyword
     Lbspec::Util.gen_keyword
   end
@@ -40,8 +44,6 @@ RSpec::Matchers.define :transfer do |nodes|
 
   def capture_on_node(node)
     @threads << Thread.new do
-      @node_port = node.split(':').last.to_i if /:\d+/ =~ node
-      node = node.split(':').first
       Net::SSH.start(node, nil, :config => true) do |ssh|
         @ssh << ssh
         ssh.open_channel { |channel| run_check channel }
@@ -85,7 +87,10 @@ RSpec::Matchers.define :transfer do |nodes|
   end
 
   def send_request(vhost)
-    system("echo #{@keyword} | nc #{vhost} #{@vhost_port}")
+    addr_port = Lbspec::Util.split_addr_port(vhost.to_s)
+    vhost_addr, vhost_port = addr_port[:addr], addr_port[:port]
+    @vhost_port = vhost_port if vhost_port > 0
+    system("echo #{@keyword} | nc #{vhost_addr} #{@vhost_port}")
   end
 
   description do
