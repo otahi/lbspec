@@ -100,7 +100,6 @@ RSpec::Matchers.define :transfer do |nodes|
   end
 
   def disconnect_nodes
-    sleep 1
     @threads.each do |t|
       t.kill
     end
@@ -123,11 +122,11 @@ RSpec::Matchers.define :transfer do |nodes|
   def send_request_application(addr, port)
     case @application
     when :http
-      query = "?#{@keyword}"
-      system("curl -sm 1 http://#{addr}:#{port}#{@http_path}#{query}")
+      uri = 'http://' + "#{addr}:#{port}#{@http_path}?#{@keyword}"
+      system("curl -o /dev/null -s #{uri}")
     when :https
-      query = "?#{@keyword}"
-      system("curl -sm 1 -k https://#{addr}:#{port}#{@http_path}#{query}")
+      uri = 'https://' + "#{addr}:#{port}#{@http_path}?#{@keyword}"
+      system("curl -o /dev/null -s -k #{uri}")
     end
   end
 
