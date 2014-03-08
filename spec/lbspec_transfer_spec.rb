@@ -31,5 +31,23 @@ describe Lbspec do
     it 'should test transfer vhost:80 and a node on port 80' do
       'vhost_a:80'.should transfer('node_a').port(80)
     end
+    it 'should test transfer vhost:80 and a node on port 80/tcp' do
+      'vhost_a:80'.should transfer('node_a').port(80).tcp
+    end
+    it 'should test transfer vhost:80 and a node on port 53/tcp' do
+      'vhost_a:80'.should transfer('node_a').port(53).udp
+    end
+    it 'should test transfer vhost:80 and a node with http' do
+      'vhost_a:80'.should transfer('node_a').http
+    end
+    it 'should test transfer vhost:443 and a node with https' do
+      'vhost_a:443'.should transfer('node_a').port(80).https
+    end
+    it 'should test transfer vhost:443 and a node:80 with https' do
+      'vhost_a:443'.should transfer('node_a').port(80).https
+    end
+    it 'should test transfer vhost:443 and a node with https /test' do
+      'vhost_a:443'.should transfer('node_a').https.path('/test')
+    end
   end
 end

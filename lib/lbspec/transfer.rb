@@ -7,6 +7,9 @@ RSpec::Matchers.define :transfer do |nodes|
   @ssh = []
   @threads = []
   @nodes_connected = []
+  @protocol = nil
+  @application = nil
+  @http_path = '/'
   @vhost_port = 80
   @node_port = 0
   @result = false
@@ -23,6 +26,28 @@ RSpec::Matchers.define :transfer do |nodes|
 
   chain :port do |port|
     @node_port = port
+  end
+
+  chain :tcp do
+    @protocol = :tcp
+  end
+
+  chain :udp do
+    @protocol = :udp
+  end
+
+  chain :http do
+    @protocol = :tcp
+    @application = :http
+  end
+
+  chain :https do
+    @protocol = :tcp
+    @application = :https
+  end
+
+  chain :path do |path|
+    @http_path = path
   end
 
   def gen_keyword
@@ -88,7 +113,31 @@ RSpec::Matchers.define :transfer do |nodes|
     addr_port = Lbspec::Util.split_addr_port(vhost.to_s)
     vhost_addr, vhost_port = addr_port[:addr], addr_port[:port]
     @vhost_port = vhost_port if vhost_port > 0
-    system("echo #{@keyword} | nc #{vhost_addr} #{@vhost_port}")
+    if @application
+      send_request_application(vhost_addr, @vhost_port)
+    else
+      send_request_transport(vhost_addr, @vhost_port)
+    end
+  end
+
+  def send_request_application(addr, port)
+    case @application
+    when :http
+      query = "?#{@keyword}"
+      system("curl -sm 1 http://#{addr}:#{port}#{@http_path}#{query}")
+    when :https
+      query = "?#{@keyword}"
+      system("curl -sm 1 -k https://#{addr}:#{port}#{@http_path}#{query}")
+    end
+  end
+
+  def send_request_transport(addr, port)
+    case @protocol
+    when :udp
+      system("echo #{@keyword} | nc -u #{addr} #{port}")
+    else
+      system("echo #{@keyword} | nc #{addr} #{port}")
+    end
   end
 
   description do
