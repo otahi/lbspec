@@ -6,9 +6,10 @@ RSpec::Matchers.define :transfer do |nodes|
   @threads = []
   @nodes_connected = []
   @result = false
+  Thread.abort_on_exception = true
 
   match do |vhost|
-    gen_keyword
+    @keyword = gen_keyword
     connect_nodes nodes
     wait_nodes_connected nodes
     send_request(vhost, 80)
@@ -17,8 +18,12 @@ RSpec::Matchers.define :transfer do |nodes|
   end
 
   def gen_keyword
-    t = Time.now
-    @keyword = t.to_i.to_s + t.nsec.to_s
+    if self.class.respond_to? :gen_keyword
+      self.class.send :gen_keyword
+    else
+      t = Time.now
+      t.to_i.to_s + t.nsec.to_s
+    end
   end
 
   def wait_nodes_connected(nodes)
@@ -41,7 +46,7 @@ RSpec::Matchers.define :transfer do |nodes|
   end
 
   def connect_node(node)
-    @ssh.push = Net::SSH.start(node, nil, :config => true) do |ssh|
+    Net::SSH.start(node, nil, :config => true) do |ssh|
       ssh.open_channel do |ch|
         ch.request_pty do |ch, success|
           raise "Could not obtain pty " if !success
@@ -68,6 +73,7 @@ RSpec::Matchers.define :transfer do |nodes|
   def send_request(vhost, port)
     system("echo #{@keyword} | nc #{vhost} #{port}")
   end
+
   def is_ok?
     @result
   end
