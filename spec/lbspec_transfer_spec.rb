@@ -5,7 +5,8 @@ require 'net/ssh'
 describe Lbspec do
   describe '#transfer' do
     before(:each) do
-      RSpec::Matchers::DSL::Matcher.stub(:gen_keyword).and_return('the_key')
+#      RSpec::Matchers::DSL::Matcher.stub(:gen_keyword).and_return('the_key')
+      Lbspec::Util.stub(:gen_keyword).and_return('the_key')
       channel_connected = double('channel_connected')
       channel_connected.stub(:request_pty).and_yield(channel_connected, true)
       channel_connected.stub(:exec).and_yield(channel_connected, nil, nil)

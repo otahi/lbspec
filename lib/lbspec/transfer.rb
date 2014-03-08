@@ -1,6 +1,7 @@
 # -*- encoding: utf-8 -*-
 require 'net/ssh'
 require 'rspec/expectations'
+require 'lbspec'
 
 RSpec::Matchers.define :transfer do |nodes|
   @ssh = []
@@ -19,12 +20,7 @@ RSpec::Matchers.define :transfer do |nodes|
   end
 
   def gen_keyword
-    if self.class.respond_to? :gen_keyword
-      self.class.send :gen_keyword
-    else
-      t = Time.now
-      t.to_i.to_s + t.nsec.to_s
-    end
+    Lbspec::Util.gen_keyword
   end
 
   def wait_nodes_connected(nodes)
