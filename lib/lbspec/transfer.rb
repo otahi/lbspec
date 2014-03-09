@@ -12,6 +12,27 @@ RSpec::Matchers.define :transfer do |nodes|
   @http_path = '/'
   @vhost_port = 80
   @node_port = 0
+
+  @capture_command = lambda do |port, prove|
+    port_str = port > 0 ? "port #{port}" : ''
+    "sudo ngrep #{prove} #{port_str} | grep -v \"match:\""
+  end
+
+  @udp_request_command = lambda do |addr, port, prove|
+    system("echo #{prove} | nc -u #{addr} #{port}")
+  end
+  @tcp_request_command = lambda do |addr, port, prove|
+    system("echo #{prove} | nc #{addr} #{port}")
+  end
+  @http_request_command = lambda do |addr, port, path, prove|
+    uri = 'http://' + "#{addr}:#{port}#{path}?#{prove}"
+    system("curl -o /dev/null -s #{uri}")
+  end
+  @https_request_command = lambda do |addr, port, path, prove|
+    uri = 'https://' + "#{addr}:#{port}#{path}?#{prove}"
+    system("curl -o /dev/null -sk #{uri}")
+  end
+
   @result = false
   Thread.abort_on_exception = true
 
@@ -81,7 +102,7 @@ RSpec::Matchers.define :transfer do |nodes|
   end
 
   def exec_capture(channel)
-    command = capture_command(@prove, @node_port)
+    command = capture_command(@node_port, @prove)
     channel.exec command do |ch, stream, data|
       num_match = 0
       ch.on_data do |c, d|
@@ -91,9 +112,8 @@ RSpec::Matchers.define :transfer do |nodes|
     end
   end
 
-  def capture_command(prove, port)
-    port_str = port > 0 ? "port #{port}" : ''
-    "sudo ngrep #{prove} #{port_str} | grep -v \"match:\""
+  def capture_command(port, prove)
+    @capture_command[port, prove]
   end
 
   def disconnect_nodes
@@ -110,29 +130,27 @@ RSpec::Matchers.define :transfer do |nodes|
     vhost_addr, vhost_port = addr_port[:addr], addr_port[:port]
     @vhost_port = vhost_port if vhost_port > 0
     if @application
-      send_request_application(vhost_addr, @vhost_port)
+      send_request_application(vhost_addr, @vhost_port, @prove)
     else
-      send_request_transport(vhost_addr, @vhost_port)
+      send_request_transport(vhost_addr, @vhost_port, @prove)
     end
   end
 
-  def send_request_application(addr, port)
+  def send_request_application(addr, port, prove)
     case @application
     when :http
-      uri = 'http://' + "#{addr}:#{port}#{@http_path}?#{@prove}"
-      system("curl -o /dev/null -s #{uri}")
+      @http_request_command[addr, port, @http_path, prove]
     when :https
-      uri = 'https://' + "#{addr}:#{port}#{@http_path}?#{@prove}"
-      system("curl -o /dev/null -s -k #{uri}")
+      @https_request_command[addr, port, @http_path, prove]
     end
   end
 
-  def send_request_transport(addr, port)
+  def send_request_transport(addr, port, prove)
     case @protocol
     when :udp
-      system("echo #{@prove} | nc -u #{addr} #{port}")
+      @udp_request_command[addr, port, prove]
     else
-      system("echo #{@prove} | nc #{addr} #{port}")
+      @tcp_request_command[addr, port, prove]
     end
   end
 
