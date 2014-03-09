@@ -3,6 +3,14 @@ require 'net/ssh'
 require 'rspec/expectations'
 require 'lbspec'
 
+RSpec.configure do |c|
+  c.add_setting :lbspec_capture_command      , :default => nil
+  c.add_setting :lbspec_udp_request_command  , :default => nil
+  c.add_setting :lbspec_tcp_request_command  , :default => nil
+  c.add_setting :lbspec_http_request_command , :default => nil
+  c.add_setting :lbspec_https_request_command, :default => nil
+end
+
 RSpec::Matchers.define :transfer do |nodes|
   @ssh = []
   @threads = []
@@ -38,6 +46,7 @@ RSpec::Matchers.define :transfer do |nodes|
 
   match do |vhost|
     @prove = Lbspec::Util.create_prove
+    override_commands
     capture_on_nodes nodes
     wait_nodes_connected nodes
     send_request vhost
@@ -69,6 +78,19 @@ RSpec::Matchers.define :transfer do |nodes|
 
   chain :path do |path|
     @http_path = path
+  end
+
+  def override_commands
+    capture = RSpec.configuration.lbspec_capture_command
+    udp_request = RSpec.configuration.lbspec_udp_request_command
+    tcp_request = RSpec.configuration.lbspec_tcp_request_command
+    http_request = RSpec.configuration.lbspec_http_request_command
+    https_request = RSpec.configuration.lbspec_https_request_command
+    @capture_command = capture if capture
+    @udp_request_command = udp_request if udp_request
+    @tcp_request_command = tcp_request if tcp_request
+    @http_request_command = http_request if http_request
+    @https_request_command = https_request if https_request
   end
 
   def wait_nodes_connected(nodes)
