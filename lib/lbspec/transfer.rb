@@ -16,7 +16,7 @@ RSpec::Matchers.define :transfer do |nodes|
   Thread.abort_on_exception = true
 
   match do |vhost|
-    @keyword = gen_keyword
+    @prove = Lbspec::Util.create_prove
     capture_on_nodes nodes
     wait_nodes_connected nodes
     send_request vhost
@@ -50,10 +50,6 @@ RSpec::Matchers.define :transfer do |nodes|
     @http_path = path
   end
 
-  def gen_keyword
-    Lbspec::Util.gen_keyword
-  end
-
   def wait_nodes_connected(nodes)
     nodes_length = (nodes.respond_to? :each) ? nodes.length : 1
     sleep 0.5 until @nodes_connected.length == nodes_length
@@ -80,23 +76,24 @@ RSpec::Matchers.define :transfer do |nodes|
     channel.request_pty do |chan, success|
       fail 'Could not obtain pty' unless success
       @nodes_connected.push(true)
-      exec_capture(chan, capture_cmd)
+      exec_capture(chan)
     end
   end
 
-  def exec_capture(channel, command)
-    channel.exec capture_cmd do |ch, stream, data|
+  def exec_capture(channel)
+    command = capture_command(@prove, @node_port)
+    channel.exec command do |ch, stream, data|
       num_match = 0
       ch.on_data do |c, d|
-        num_match += 1 if /#{@keyword}/ =~ d
+        num_match += 1 if /#{@prove}/ =~ d
         @result = true if num_match > 0
       end
     end
   end
 
-  def capture_cmd
-    port_str = @node_port > 0 ? "port #{@node_port}" : ''
-    "sudo ngrep #{@keyword} #{port_str} | grep -v \"match:\""
+  def capture_command(prove, port)
+    port_str = port > 0 ? "port #{port}" : ''
+    "sudo ngrep #{prove} #{port_str} | grep -v \"match:\""
   end
 
   def disconnect_nodes
@@ -122,10 +119,10 @@ RSpec::Matchers.define :transfer do |nodes|
   def send_request_application(addr, port)
     case @application
     when :http
-      uri = 'http://' + "#{addr}:#{port}#{@http_path}?#{@keyword}"
+      uri = 'http://' + "#{addr}:#{port}#{@http_path}?#{@prove}"
       system("curl -o /dev/null -s #{uri}")
     when :https
-      uri = 'https://' + "#{addr}:#{port}#{@http_path}?#{@keyword}"
+      uri = 'https://' + "#{addr}:#{port}#{@http_path}?#{@prove}"
       system("curl -o /dev/null -s -k #{uri}")
     end
   end
@@ -133,9 +130,9 @@ RSpec::Matchers.define :transfer do |nodes|
   def send_request_transport(addr, port)
     case @protocol
     when :udp
-      system("echo #{@keyword} | nc -u #{addr} #{port}")
+      system("echo #{@prove} | nc -u #{addr} #{port}")
     else
-      system("echo #{@keyword} | nc #{addr} #{port}")
+      system("echo #{@prove} | nc #{addr} #{port}")
     end
   end
 
