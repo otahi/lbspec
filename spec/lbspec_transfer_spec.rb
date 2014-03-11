@@ -49,5 +49,9 @@ describe Lbspec do
     it 'should test transfer vhost:443 and a node with https /test' do
       'vhost_a:443'.should transfer('node_a').https.path('/test')
     end
+    describe 'vhost_a:443' do
+      it { should transfer('node_a').https.path('/test') }
+      it { should transfer('node_a').port(80).tcp.https.path('/test') }
+    end
   end
 end

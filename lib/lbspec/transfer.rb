@@ -15,6 +15,7 @@ RSpec::Matchers.define :transfer do |nodes|
   @ssh = []
   @threads = []
   @nodes_connected = []
+  @chain_str = ''
   @protocol = nil
   @application = nil
   @http_path = '/'
@@ -56,28 +57,34 @@ RSpec::Matchers.define :transfer do |nodes|
 
   chain :port do |port|
     @node_port = port
+    @chain_str << " port #{port}"
   end
 
   chain :tcp do
     @protocol = :tcp
+    @chain_str << ' tcp'
   end
 
   chain :udp do
     @protocol = :udp
+    @chain_str << ' udp'
   end
 
   chain :http do
     @protocol = :tcp
     @application = :http
+    @chain_str << ' http'
   end
 
   chain :https do
     @protocol = :tcp
     @application = :https
+    @chain_str << ' https'
   end
 
   chain :path do |path|
     @http_path = path
+    @chain_str << " via #{path}"
   end
 
   def override_commands
@@ -177,14 +184,20 @@ RSpec::Matchers.define :transfer do |nodes|
   end
 
   description do
-    "transfer requests to #{nodes}."
+    "transfer requests to #{nodes}#{@chain_str}."
   end
 
   failure_message_for_should do |vhost|
-    "expected #{vhost} to transfer requests to #{nodes}, but did not."
+    result =  "expected #{vhost} to transfer requests to"
+    result << nodes
+    result << @chain_str
+    result << ', but did not.'
   end
 
   failure_message_for_should_not do |vhost|
-    "expected #{vhost} not to transfer requests to #{nodes}, but it did."
+    result =  "expected #{vhost} not to transfer requests to"
+    result << nodes
+    result << @chain_str
+    result << ', but did.'
   end
 end
