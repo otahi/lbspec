@@ -67,6 +67,39 @@ describe 'vhost_c:443' do
 end
 
 ```
+## How it works
+### #transfer
+
+ 1. ssh to nodes
+ 2. cupture probe
+ 3. access with probe
+ 4. judge
+
+![#tranfer works][1]
+
+## Configuration
+### #transfer
+You can cnange how to capture probes and access to `vhost` with probes. You can replace default procedures to your procedures in spec_helpers or .spec files as follows.
+```ruby
+RSpec.configuration.lbspec_capture_command =
+  lambda do |port, prove|
+  port_str = port > 0 ? "port #{port}" : ''
+  "sudo ngrep #{prove} #{port_str} | grep -v \"match:\""
+end
+
+RSpec.configuration.lbspec_https_request_command =
+  lambda do |addr, port, path, prove|
+  uri = 'https://' + "#{addr}:#{port}#{path}?#{prove}"
+  system("curl -o /dev/null -sk #{uri}")
+end
+```
+You can replace following items.
+
+ - `lbspec_capture_command` with `|port, prove|`
+ - `lbspec_udp_request_command` with `|addr, port, prove|`
+ - `lbspec_tcp_request_command` with `|addr, port, prove|`
+ - `lbspec_http_request_command` with `|addr, port, path, prove|`
+ - `lbspec_https_request_command` with `|addr, port, path, prove|`
 
 ## Contributing
 
@@ -75,3 +108,6 @@ end
 3. Commit your changes (`git commit -am 'Add some feature'`)
 4. Push to the branch (`git push origin my-new-feature`)
 5. Create new Pull Request
+
+
+  [1]: images/transfer_overview.gif
