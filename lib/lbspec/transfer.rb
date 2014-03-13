@@ -1,5 +1,6 @@
 # -*- encoding: utf-8 -*-
 require 'net/ssh'
+require 'rspec/core'
 require 'rspec/expectations'
 require 'lbspec'
 
