@@ -190,14 +190,14 @@ RSpec::Matchers.define :transfer do |nodes|
 
   failure_message_for_should do |vhost|
     result =  "expected #{vhost} to transfer requests to"
-    result << nodes
+    result << nodes.to_s
     result << @chain_str
     result << ', but did not.'
   end
 
   failure_message_for_should_not do |vhost|
     result =  "expected #{vhost} not to transfer requests to"
-    result << nodes
+    result << nodes.to_s
     result << @chain_str
     result << ', but did.'
   end
