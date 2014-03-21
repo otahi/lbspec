@@ -66,6 +66,11 @@ describe 'vhost_c:443' do
   it { should transfer(['node_b','node_c']).port(80).https.path('/test/') }
 end
 
+describe 'vhost_c:443' do
+  it { should transfer(['node_b','node_c']).port(80).https.path('/test/')
+      .options(ignore_valid_ssl: true) }
+end
+
 ```
 ## How it works
 ### #transfer
@@ -79,7 +84,7 @@ end
 
 ## Configuration
 ### #transfer
-You can cnange how to capture probes and access to `vhost` with probes. You can replace default procedures to your procedures in spec_helpers or .spec files as follows.
+You can change how to capture probes and access to `vhost` with probes. You can replace default procedures to your procedures in spec_helpers or .spec files as follows.
 ```ruby
 RSpec.configuration.lbspec_capture_command =
   lambda do |port, prove|
@@ -93,6 +98,16 @@ RSpec.configuration.lbspec_https_request_command =
   system("curl -o /dev/null -sk #{uri}")
 end
 ```
+You can also use the procedures with `options` with a chain `options`.
+```ruby
+RSpec.configuration.lbspec_https_request_command =
+  lambda do |addr, port, path, prove|
+  opt = @options[:ignore_valid_ssl] ? '-k' : ''
+  uri = 'https://' + "#{addr}:#{port}#{path}?#{prove}"
+  system("curl -o /dev/null -s #{opt} #{uri}")
+end
+```
+
 You can replace following items.
 
  - `lbspec_capture_command` with `|port, prove|`
