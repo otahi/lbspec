@@ -5,11 +5,11 @@ require 'rspec/expectations'
 require 'lbspec'
 
 RSpec.configure do |c|
-  c.add_setting :lbspec_capture_command      , :default => nil
-  c.add_setting :lbspec_udp_request_command  , :default => nil
-  c.add_setting :lbspec_tcp_request_command  , :default => nil
-  c.add_setting :lbspec_http_request_command , :default => nil
-  c.add_setting :lbspec_https_request_command, :default => nil
+  c.add_setting :lbspec_capture_command      , default: nil
+  c.add_setting :lbspec_udp_request_command  , default: nil
+  c.add_setting :lbspec_tcp_request_command  , default: nil
+  c.add_setting :lbspec_http_request_command , default: nil
+  c.add_setting :lbspec_https_request_command, default: nil
 end
 
 RSpec::Matchers.define :transfer do |nodes|
@@ -124,7 +124,7 @@ RSpec::Matchers.define :transfer do |nodes|
 
   def capture_on_node(node)
     @threads << Thread.new do
-      Net::SSH.start(node, nil, :config => true) do |ssh|
+      Net::SSH.start(node, nil, config: true) do |ssh|
         @ssh << ssh
         ssh.open_channel { |channel| run_check channel }
       end

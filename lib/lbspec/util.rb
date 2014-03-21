@@ -12,7 +12,7 @@ module Lbspec
       splits = addr_port_str.split(':')
       addr = splits.first
       port = splits.last.to_i if /\d+/ =~ splits.last
-      { :addr => addr, :port => port }
+      { addr: addr, port: port }
     end
   end
 end
