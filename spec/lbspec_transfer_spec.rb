@@ -60,7 +60,7 @@ describe Lbspec do
       end
       it do
         should transfer('node_a').https.path('/test')
-          .options(timeout: 5)
+          .options(ignore_valid_ssl: false, timeout: 5)
       end
     end
   end

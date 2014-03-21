@@ -67,8 +67,10 @@ describe 'vhost_c:443' do
 end
 
 describe 'vhost_c:443' do
-  it { should transfer(['node_b','node_c']).port(80).https.path('/test/')
-      .options(ignore_valid_ssl: true) }
+  it do
+    should transfer(['node_b','node_c']).port(80).https.path('/test/')
+      .options(ignore_valid_ssl: true)
+  end
 end
 
 ```
@@ -102,8 +104,8 @@ You can also use the procedures with `options` with a chain `options`.
 ```ruby
 RSpec.configuration.lbspec_https_request_command =
   lambda do |addr, port, path, prove|
-  opt = @options[:ignore_valid_ssl] ? '-k' : ''
-  uri = 'https://' + "#{addr}:#{port}#{path}?#{prove}"
+  opt =  @options[:timeout] ? " -m #{@options[:timeout]}" : ''
+  opt << (@options[:ignore_valid_ssl] ? ' -k' : '')
   system("curl -o /dev/null -s #{opt} #{uri}")
 end
 ```
