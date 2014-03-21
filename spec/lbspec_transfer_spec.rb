@@ -53,5 +53,15 @@ describe Lbspec do
       it { should transfer('node_a').https.path('/test') }
       it { should transfer('node_a').port(80).tcp.https.path('/test') }
     end
+    describe 'vhost_a:443' do
+      it do
+        should transfer('node_a').https.path('/test')
+          .options(ignore_valid_ssl: true)
+      end
+      it do
+        should transfer('node_a').https.path('/test')
+          .options(timeout: 5)
+      end
+    end
   end
 end

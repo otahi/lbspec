@@ -22,6 +22,7 @@ RSpec::Matchers.define :transfer do |nodes|
   @http_path = '/'
   @vhost_port = 80
   @node_port = 0
+  @options = {}
 
   @capture_command = lambda do |port, prove|
     port_str = port > 0 ? "port #{port}" : ''
@@ -35,12 +36,15 @@ RSpec::Matchers.define :transfer do |nodes|
     system("echo #{prove} | nc #{addr} #{port}")
   end
   @http_request_command = lambda do |addr, port, path, prove|
+    opt =  @options[:timeout] ? " -m #{@options[:timeout]}" : ''
     uri = 'http://' + "#{addr}:#{port}#{path}?#{prove}"
-    system("curl -o /dev/null -s #{uri}")
+    system("curl -o /dev/null -s #{opt} #{uri}")
   end
   @https_request_command = lambda do |addr, port, path, prove|
+    opt =  @options[:timeout] ? " -m #{@options[:timeout]}" : ''
+    opt << (@options[:ignore_valid_ssl] ? ' -k' : '')
     uri = 'https://' + "#{addr}:#{port}#{path}?#{prove}"
-    system("curl -o /dev/null -sk #{uri}")
+    system("curl -o /dev/null -sk #{opt} #{uri}")
   end
 
   @result = false
@@ -86,6 +90,10 @@ RSpec::Matchers.define :transfer do |nodes|
   chain :path do |path|
     @http_path = path
     @chain_str << " via #{path}"
+  end
+
+  chain :options do |options|
+    @options = options
   end
 
   def override_commands
