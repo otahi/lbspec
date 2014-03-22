@@ -22,6 +22,7 @@ RSpec::Matchers.define :transfer do |nodes|
   @http_path = '/'
   @vhost_port = 80
   @node_port = 0
+  @request_node = nil
   @options = {}
 
   @capture_command = lambda do |port, prove|
@@ -30,21 +31,21 @@ RSpec::Matchers.define :transfer do |nodes|
   end
 
   @udp_request_command = lambda do |addr, port, prove|
-    system("echo #{prove} | nc -u #{addr} #{port}")
+    exec_command("echo #{prove} | nc -u #{addr} #{port}")
   end
   @tcp_request_command = lambda do |addr, port, prove|
-    system("echo #{prove} | nc #{addr} #{port}")
+    exec_command("echo #{prove} | nc #{addr} #{port}")
   end
   @http_request_command = lambda do |addr, port, path, prove|
     opt =  @options[:timeout] ? " -m #{@options[:timeout]}" : ''
     uri = 'http://' + "#{addr}:#{port}#{path}?#{prove}"
-    system("curl -o /dev/null -s #{opt} #{uri}")
+    exec_command("curl -o /dev/null -s #{opt} #{uri}")
   end
   @https_request_command = lambda do |addr, port, path, prove|
     opt =  @options[:timeout] ? " -m #{@options[:timeout]}" : ''
     opt << (@options[:ignore_valid_ssl] ? ' -k' : '')
     uri = 'https://' + "#{addr}:#{port}#{path}?#{prove}"
-    system("curl -o /dev/null -sk #{opt} #{uri}")
+    exec_command("curl -o /dev/null -sk #{opt} #{uri}")
   end
 
   @result = false
@@ -90,6 +91,11 @@ RSpec::Matchers.define :transfer do |nodes|
   chain :path do |path|
     @http_path = path
     @chain_str << " via #{path}"
+  end
+
+  chain :from do |from|
+    @request_node = from
+    @chain_str << " from #{from}"
   end
 
   chain :options do |options|
@@ -189,6 +195,16 @@ RSpec::Matchers.define :transfer do |nodes|
       @udp_request_command[addr, port, prove]
     else
       @tcp_request_command[addr, port, prove]
+    end
+  end
+
+  def exec_command(command)
+    if @request_node
+      Net::SSH.start(@request_node, nil, config: true) do |ssh|
+        ssh.exec!(command)
+      end
+    else
+      system(command)
     end
   end
 
