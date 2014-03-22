@@ -14,5 +14,14 @@ module Lbspec
       port = splits.last.to_i if /\d+/ =~ splits.last
       { addr: addr, port: port }
     end
+    def self.exec_command(command, node = nil)
+      if node
+        Net::SSH.start(node, nil, config: true) do |ssh|
+          ssh.exec!(command)
+        end
+      else
+        system(command)
+      end
+    end
   end
 end

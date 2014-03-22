@@ -31,21 +31,25 @@ RSpec::Matchers.define :transfer do |nodes|
   end
 
   @udp_request_command = lambda do |addr, port, prove|
-    exec_command("echo #{prove} | nc -u #{addr} #{port}")
+    Lbspec::Util
+      .exec_command("echo #{prove} | nc -u #{addr} #{port}", @request_node)
   end
   @tcp_request_command = lambda do |addr, port, prove|
-    exec_command("echo #{prove} | nc #{addr} #{port}")
+    Lbspec::Util
+      .exec_command("echo #{prove} | nc #{addr} #{port}", @request_node)
   end
   @http_request_command = lambda do |addr, port, path, prove|
     opt =  @options[:timeout] ? " -m #{@options[:timeout]}" : ''
     uri = 'http://' + "#{addr}:#{port}#{path}?#{prove}"
-    exec_command("curl -o /dev/null -s #{opt} #{uri}")
+    Lbspec::Util
+      .exec_command("curl -o /dev/null -s #{opt} #{uri}", @request_node)
   end
   @https_request_command = lambda do |addr, port, path, prove|
     opt =  @options[:timeout] ? " -m #{@options[:timeout]}" : ''
     opt << (@options[:ignore_valid_ssl] ? ' -k' : '')
     uri = 'https://' + "#{addr}:#{port}#{path}?#{prove}"
-    exec_command("curl -o /dev/null -sk #{opt} #{uri}")
+    Lbspec::Util
+      .exec_command("curl -o /dev/null -sk #{opt} #{uri}", @request_node)
   end
 
   @result = false
@@ -195,16 +199,6 @@ RSpec::Matchers.define :transfer do |nodes|
       @udp_request_command[addr, port, prove]
     else
       @tcp_request_command[addr, port, prove]
-    end
-  end
-
-  def exec_command(command)
-    if @request_node
-      Net::SSH.start(@request_node, nil, config: true) do |ssh|
-        ssh.exec!(command)
-      end
-    else
-      system(command)
     end
   end
 
