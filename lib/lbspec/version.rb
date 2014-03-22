@@ -1,5 +1,5 @@
 # -*- encoding: utf-8 -*-
 # Lbspec is an RSpec plugin for easy Loadbalancer testing.
 module Lbspec
-  VERSION = '0.0.6'
+  VERSION = '0.1.0'
 end
