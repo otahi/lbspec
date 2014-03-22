@@ -118,7 +118,7 @@ end
 
 ## Configuration
 ### #transfer
-You can change how to capture probes and access to `vhost` with probes. You can replace default procedures to your procedures in spec_helpers or .spec files as follows.
+You can change how to capture probes and access to `vhost` with probes. You can replace default procedures to your procedures in spec_helpers or .spec files as follows. If you use `Lbspec::Util.exec_command()`, you can specify the node which generate request.
 ```ruby
 RSpec.configuration.lbspec_capture_command =
   lambda do |port, prove|
@@ -129,7 +129,7 @@ end
 RSpec.configuration.lbspec_https_request_command =
   lambda do |addr, port, path, prove|
   uri = 'https://' + "#{addr}:#{port}#{path}?#{prove}"
-  system("curl -o /dev/null -sk #{uri}")
+  Lbspec::Util.exec_command("curl -o /dev/null -sk #{uri}", @request_node)
 end
 ```
 You can also use the procedures with `options` with a chain `options`.
@@ -138,7 +138,7 @@ RSpec.configuration.lbspec_https_request_command =
   lambda do |addr, port, path, prove|
   opt =  @options[:timeout] ? " -m #{@options[:timeout]}" : ''
   opt << (@options[:ignore_valid_ssl] ? ' -k' : '')
-  system("curl -o /dev/null -s #{opt} #{uri}")
+  Lbspec::Util.exec_command("curl -o /dev/null -s #{opt} #{uri}", @request_node)
 end
 ```
 
