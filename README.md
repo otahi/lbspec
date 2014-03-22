@@ -19,6 +19,33 @@ Or install it yourself as:
 
     $ gem install lbspec
 
+## Functions
+You can use lbspec to test load balancers.
+
+### #transfer
+`#transfer` tests if a virtual host on a load balancer transfer requests to target nodes.
+
+#### chains
+You can use following chains with `#transfer`.
+
+- port
+ - Tests if a virtual host transfers requests to specified port on target nodes.
+- tcp
+  - Tests with tcp packets for the virtual host.
+- udp
+  - Tests with udp packets for the virtual host.
+- http
+  - Tests with an http request for the virtual host.
+- https
+  - Tests with an https request for the virtual host.
+- path
+  - Specifies a path for http or https requests.
+- from
+  - Specifies which host sends to the virtual host.
+- options
+  - Options which can be used in http or https request commands.
+  - You can use `options` if you configure request commands or capture commands.
+
 ## Requires
 * Users need to be able to login with ssh to the target nodes.
 * Users need to be able to `sudo` on the target nodes.
@@ -73,6 +100,10 @@ describe 'vhost_c:443' do
   end
 end
 
+describe 'vhost_c:80' do
+  it { should transfer('node_c').http.path('/test/').from('node_a') }
+end
+
 ```
 ## How it works
 ### #transfer
@@ -84,9 +115,10 @@ end
 
 ![#tranfer works][1]
 
+
 ## Configuration
 ### #transfer
-You can change how to capture probes and access to `vhost` with probes. You can replace default procedures to your procedures in spec_helpers or .spec files as follows.
+You can change how to capture probes and access to `vhost` with probes. You can replace default procedures to your procedures in spec_helpers or .spec files as follows. If you use `Lbspec::Util.exec_command()`, you can specify the node which generate request.
 ```ruby
 RSpec.configuration.lbspec_capture_command =
   lambda do |port, prove|
@@ -97,7 +129,7 @@ end
 RSpec.configuration.lbspec_https_request_command =
   lambda do |addr, port, path, prove|
   uri = 'https://' + "#{addr}:#{port}#{path}?#{prove}"
-  system("curl -o /dev/null -sk #{uri}")
+  Lbspec::Util.exec_command("curl -o /dev/null -sk #{uri}", @request_node)
 end
 ```
 You can also use the procedures with `options` with a chain `options`.
@@ -106,7 +138,7 @@ RSpec.configuration.lbspec_https_request_command =
   lambda do |addr, port, path, prove|
   opt =  @options[:timeout] ? " -m #{@options[:timeout]}" : ''
   opt << (@options[:ignore_valid_ssl] ? ' -k' : '')
-  system("curl -o /dev/null -s #{opt} #{uri}")
+  Lbspec::Util.exec_command("curl -o /dev/null -s #{opt} #{uri}", @request_node)
 end
 ```
 

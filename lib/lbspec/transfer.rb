@@ -22,6 +22,7 @@ RSpec::Matchers.define :transfer do |nodes|
   @http_path = '/'
   @vhost_port = 80
   @node_port = 0
+  @request_node = nil
   @options = {}
 
   @capture_command = lambda do |port, prove|
@@ -30,21 +31,25 @@ RSpec::Matchers.define :transfer do |nodes|
   end
 
   @udp_request_command = lambda do |addr, port, prove|
-    system("echo #{prove} | nc -u #{addr} #{port}")
+    Lbspec::Util
+      .exec_command("echo #{prove} | nc -u #{addr} #{port}", @request_node)
   end
   @tcp_request_command = lambda do |addr, port, prove|
-    system("echo #{prove} | nc #{addr} #{port}")
+    Lbspec::Util
+      .exec_command("echo #{prove} | nc #{addr} #{port}", @request_node)
   end
   @http_request_command = lambda do |addr, port, path, prove|
     opt =  @options[:timeout] ? " -m #{@options[:timeout]}" : ''
     uri = 'http://' + "#{addr}:#{port}#{path}?#{prove}"
-    system("curl -o /dev/null -s #{opt} #{uri}")
+    Lbspec::Util
+      .exec_command("curl -o /dev/null -s #{opt} #{uri}", @request_node)
   end
   @https_request_command = lambda do |addr, port, path, prove|
     opt =  @options[:timeout] ? " -m #{@options[:timeout]}" : ''
     opt << (@options[:ignore_valid_ssl] ? ' -k' : '')
     uri = 'https://' + "#{addr}:#{port}#{path}?#{prove}"
-    system("curl -o /dev/null -sk #{opt} #{uri}")
+    Lbspec::Util
+      .exec_command("curl -o /dev/null -sk #{opt} #{uri}", @request_node)
   end
 
   @result = false
@@ -90,6 +95,11 @@ RSpec::Matchers.define :transfer do |nodes|
   chain :path do |path|
     @http_path = path
     @chain_str << " via #{path}"
+  end
+
+  chain :from do |from|
+    @request_node = from
+    @chain_str << " from #{from}"
   end
 
   chain :options do |options|
