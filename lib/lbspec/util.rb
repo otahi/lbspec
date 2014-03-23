@@ -20,7 +20,7 @@ module Lbspec
           ssh.exec!(command)
         end
       else
-        system(command)
+        `#{command}`
       end
     end
   end
