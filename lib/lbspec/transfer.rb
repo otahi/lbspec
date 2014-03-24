@@ -44,7 +44,7 @@ RSpec::Matchers.define :transfer do |nodes|
     opt << (@options[:header] ? %q(-H "#{@options[:header]}") : '')
     uri = 'http://' + "#{addr}:#{port}#{path}?#{prove}"
     Lbspec::Util
-      .exec_command("curl -o /dev/null -s #{opt} #{uri}", @request_node)
+      .exec_command(%Q(curl -o /dev/null -s #{opt} '#{uri}'), @request_node)
   end
   @https_request_command = lambda do |addr, port, path, prove|
     opt =  @options[:timeout] ? " -m #{@options[:timeout]}" : ''
@@ -53,7 +53,7 @@ RSpec::Matchers.define :transfer do |nodes|
     opt << (@options[:header] ? %q(-H "#{@options[:header]}") : '')
     uri = 'https://' + "#{addr}:#{port}#{path}?#{prove}"
     Lbspec::Util
-      .exec_command("curl -o /dev/null -sk #{opt} #{uri}", @request_node)
+      .exec_command(%Q(curl -o /dev/null -sk #{opt} '#{uri}'), @request_node)
   end
 
   @result = false
