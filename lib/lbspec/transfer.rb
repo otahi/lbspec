@@ -50,10 +50,11 @@ RSpec::Matchers.define :transfer do |nodes|
     opt =  @options[:timeout] ? " -m #{@options[:timeout]}" : ''
     opt << (@options[:ignore_valid_ssl] ? ' -k' : '')
     opt << (@options[:proxy] ? %q(-x "#{@options[:proxy]}") : '')
+    opt << (@options[:no_proxy] ? %q(--noproxy "#{@options[:no_proxy]}") : '')
     opt << (@options[:header] ? %q(-H "#{@options[:header]}") : '')
     uri = 'https://' + "#{addr}:#{port}#{path}?#{prove}"
     Lbspec::Util
-      .exec_command(%Q(curl -o /dev/null -sk #{opt} '#{uri}'), @request_node)
+      .exec_command(%Q(curl -o /dev/null -s #{opt} '#{uri}'), @request_node)
   end
 
   @result = false
