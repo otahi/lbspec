@@ -41,6 +41,7 @@ RSpec::Matchers.define :transfer do |nodes|
   @http_request_command = lambda do |addr, port, path, prove|
     opt =  @options[:timeout] ? " -m #{@options[:timeout]}" : ''
     opt << (@options[:proxy] ? %q(-x "#{@options[:proxy]}") : '')
+    opt << (@options[:noproxy] ? %q(--noproxy "#{@options[:noproxy]}") : '')
     opt << (@options[:header] ? %q(-H "#{@options[:header]}") : '')
     uri = 'http://' + "#{addr}:#{port}#{path}?#{prove}"
     Lbspec::Util
@@ -50,7 +51,7 @@ RSpec::Matchers.define :transfer do |nodes|
     opt =  @options[:timeout] ? " -m #{@options[:timeout]}" : ''
     opt << (@options[:ignore_valid_ssl] ? ' -k' : '')
     opt << (@options[:proxy] ? %q(-x "#{@options[:proxy]}") : '')
-    opt << (@options[:no_proxy] ? %q(--noproxy "#{@options[:no_proxy]}") : '')
+    opt << (@options[:noproxy] ? %q(--noproxy "#{@options[:noproxy]}") : '')
     opt << (@options[:header] ? %q(-H "#{@options[:header]}") : '')
     uri = 'https://' + "#{addr}:#{port}#{path}?#{prove}"
     Lbspec::Util
