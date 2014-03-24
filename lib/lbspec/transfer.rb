@@ -39,24 +39,35 @@ RSpec::Matchers.define :transfer do |nodes|
       .exec_command("echo #{prove} | nc #{addr} #{port}", @request_node)
   end
   @http_request_command = lambda do |addr, port, path, prove|
-    opt =  @options[:timeout] ? " -m #{@options[:timeout]}" : ''
-    opt << (@options[:proxy] ? %q(-x "#{@options[:proxy]}") : '')
-    opt << (@options[:noproxy] ? %q(--noproxy "#{@options[:noproxy]}") : '')
-    opt << (@options[:header] ? %q(-H "#{@options[:header]}") : '')
+    env, opt = '', ''
+    opt << (@options[:timeout] ? " -m #{@options[:timeout]}" : '')
+    opt << (@options[:proxy] ? %Q(-x "#{@options[:proxy]}") : '')
+    if @options[:noproxy]
+      opt << %Q( --noproxy "#{@options[:noproxy]}")
+      env << %Q( no_proxy="#{@options[:noproxy]}")
+      env << %Q( NO_PROXY="#{@options[:noproxy]}")
+    end
+    opt << (@options[:header] ? %Q(-H '#{@options[:header]}') : '')
     uri = 'http://' + "#{addr}:#{port}#{path}?#{prove}"
     Lbspec::Util
-      .exec_command(%Q(curl -o /dev/null -s #{opt} '#{uri}'), @request_node)
+      .exec_command(%Q(#{env} curl -o /dev/null -s #{opt} '#{uri}'),
+                    @request_node)
   end
   @https_request_command = lambda do |addr, port, path, prove|
-    opt =  @options[:timeout] ? " -m #{@options[:timeout]}" : ''
+    env, opt = '', ''
+    opt << (@options[:timeout] ? " -m #{@options[:timeout]}" : '')
     opt << (@options[:ignore_valid_ssl] ? ' -k' : '')
-    opt << (@options[:proxy] ? %q(-x "#{@options[:proxy]}") : '')
-    opt << (@options[:noproxy] ? %q(--noproxy "#{@options[:noproxy]}") : '')
-    opt << (@options[:header] ? %q(-H "#{@options[:header]}") : '')
+    opt << (@options[:proxy] ? %Q( -x "#{@options[:proxy]}") : '')
+    if @options[:noproxy]
+      opt << %Q( --noproxy "#{@options[:noproxy]}")
+      env << %Q( no_proxy="#{@options[:noproxy]}")
+      env << %Q( NO_PROXY="#{@options[:noproxy]}")
+    end
+    opt << (@options[:header] ? %Q( -H '#{@options[:header]}') : '')
     uri = 'https://' + "#{addr}:#{port}#{path}?#{prove}"
     Lbspec::Util
-      .exec_command(%Q(curl -o /dev/null -s #{opt} '#{uri}'), @request_node)
-  end
+      .exec_command(%Q(#{env} curl -o /dev/null -s #{opt} '#{uri}'),
+                    @request_node)
 
   @result = false
   Thread.abort_on_exception = true
