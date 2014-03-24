@@ -68,6 +68,7 @@ RSpec::Matchers.define :transfer do |nodes|
     Lbspec::Util
       .exec_command(%Q(#{env} curl -o /dev/null -s #{opt} '#{uri}'),
                     @request_node)
+  end
 
   @result = false
   Thread.abort_on_exception = true
