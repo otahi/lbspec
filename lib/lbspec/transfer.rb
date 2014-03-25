@@ -46,7 +46,11 @@ RSpec::Matchers.define :transfer do |nodes|
       env << %Q( no_proxy="#{@options[:noproxy]}")
       env << %Q( NO_PROXY="#{@options[:noproxy]}")
     end
-    opt << (@options[:header] ? %Q( -H '#{@options[:header]}') : '')
+    if @options[:header]
+      header = @options[:header]
+      header = [header] unless header.respond_to? :each
+      header.each { |h| opt << %Q( -H '#{h}') }
+    end
     uri = 'http://' + "#{addr}:#{port}#{path}?#{prove}"
     Lbspec::Util
       .exec_command(%Q(#{env} curl -o /dev/null -s #{opt} '#{uri}'),
@@ -61,7 +65,11 @@ RSpec::Matchers.define :transfer do |nodes|
       env << %Q( no_proxy="#{@options[:noproxy]}")
       env << %Q( NO_PROXY="#{@options[:noproxy]}")
     end
-    opt << (@options[:header] ? %Q( -H '#{@options[:header]}') : '')
+    if @options[:header]
+      header = @options[:header]
+      header = [header] unless header.respond_to? :each
+      header.each { |h| opt << %Q( -H '#{h}') }
+    end
     uri = 'https://' + "#{addr}:#{port}#{path}?#{prove}"
     Lbspec::Util
       .exec_command(%Q(#{env} curl -o /dev/null -s #{opt} '#{uri}'),
