@@ -43,7 +43,6 @@ RSpec::Matchers.define :transfer do |nodes|
     opt << (@options[:timeout] ? " -m #{@options[:timeout]}" : '')
     opt << (@options[:proxy] ? %Q( -x "#{@options[:proxy]}") : '')
     if @options[:noproxy]
-      opt << %Q( --noproxy "#{@options[:noproxy]}")
       env << %Q( no_proxy="#{@options[:noproxy]}")
       env << %Q( NO_PROXY="#{@options[:noproxy]}")
     end
@@ -59,7 +58,6 @@ RSpec::Matchers.define :transfer do |nodes|
     opt << (@options[:ignore_valid_ssl] ? ' -k' : '')
     opt << (@options[:proxy] ? %Q( -x "#{@options[:proxy]}") : '')
     if @options[:noproxy]
-      opt << %Q( --noproxy "#{@options[:noproxy]}")
       env << %Q( no_proxy="#{@options[:noproxy]}")
       env << %Q( NO_PROXY="#{@options[:noproxy]}")
     end
