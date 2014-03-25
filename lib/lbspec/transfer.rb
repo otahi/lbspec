@@ -41,13 +41,13 @@ RSpec::Matchers.define :transfer do |nodes|
   @http_request_command = lambda do |addr, port, path, prove|
     env, opt = '', ''
     opt << (@options[:timeout] ? " -m #{@options[:timeout]}" : '')
-    opt << (@options[:proxy] ? %Q(-x "#{@options[:proxy]}") : '')
+    opt << (@options[:proxy] ? %Q( -x "#{@options[:proxy]}") : '')
     if @options[:noproxy]
       opt << %Q( --noproxy "#{@options[:noproxy]}")
       env << %Q( no_proxy="#{@options[:noproxy]}")
       env << %Q( NO_PROXY="#{@options[:noproxy]}")
     end
-    opt << (@options[:header] ? %Q(-H '#{@options[:header]}') : '')
+    opt << (@options[:header] ? %Q( -H '#{@options[:header]}') : '')
     uri = 'http://' + "#{addr}:#{port}#{path}?#{prove}"
     Lbspec::Util
       .exec_command(%Q(#{env} curl -o /dev/null -s #{opt} '#{uri}'),
