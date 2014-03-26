@@ -23,6 +23,7 @@ RSpec::Matchers.define :transfer do |nodes|
   @vhost_port = 80
   @node_port = 0
   @request_node = nil
+  @include_str = nil
   @options = {}
 
   @capture_command = lambda do |port, prove|
@@ -126,6 +127,11 @@ RSpec::Matchers.define :transfer do |nodes|
     @chain_str << " from #{from}"
   end
 
+  chain :include do |str|
+    @include_str = str
+    @chain_str << " including #{str}"
+  end
+
   chain :options do |options|
     @options = options
   end
@@ -177,8 +183,16 @@ RSpec::Matchers.define :transfer do |nodes|
     command = capture_command(@node_port, @prove)
     channel.exec command do |ch, stream, data|
       num_match = 0
+      whole_data = ''
       ch.on_data do |c, d|
-        num_match += 1 if /#{@prove}/ =~ d
+        whole_data << d
+        if /#{@prove}/ =~ whole_data
+          if @include_str.nil?
+            num_match += 1
+          elsif /#{@include_str}/ =~ whole_data
+            num_match += 1
+          end
+        end
         @result = true if num_match > 0
       end
     end
