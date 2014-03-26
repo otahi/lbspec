@@ -77,7 +77,7 @@ describe Lbspec do
         Lbspec::Util.should_not_receive(:exec_command)
           .with(/ -H.* -H/, nil)
         'vhost_a:443'.should transfer('node_a').http
-          .options({ header: 'X-Test1:1' })
+          .options(header: 'X-Test1:1')
       end
       it 'should create single header options for https' do
         Lbspec::Util.should_receive(:exec_command)
@@ -85,19 +85,19 @@ describe Lbspec do
         Lbspec::Util.should_not_receive(:exec_command)
           .with(/ -H.* -H/, nil)
         'vhost_a:443'.should transfer('node_a').https
-          .options({ header: 'X-Test1:1' })
+          .options(header: 'X-Test1:1')
       end
       it 'should create multi header options for http' do
         Lbspec::Util.should_receive(:exec_command)
           .with(/ -H.* -H/, nil)
         'vhost_a:443'.should transfer('node_a').http
-          .options({ header: %w(X-Test1:1 X-Test2:2) })
+          .options(header: %w(X-Test1:1 X-Test2:2))
       end
       it 'should create multi header options for https' do
         Lbspec::Util.should_receive(:exec_command)
           .with(/ -H.* -H/, nil)
         'vhost_a:443'.should transfer('node_a').https
-          .options({ header: %w(X-Test1:1 X-Test2:2) })
+          .options(header: %w(X-Test1:1 X-Test2:2))
       end
     end
 
