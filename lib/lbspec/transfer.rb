@@ -24,6 +24,7 @@ RSpec::Matchers.define :transfer do |nodes|
   @node_port = 0
   @request_node = nil
   @include_str = nil
+  @output_request = ''
   @options = {}
 
   @capture_command = lambda do |port, prove|
@@ -192,9 +193,11 @@ RSpec::Matchers.define :transfer do |nodes|
     vhost_addr, vhost_port = addr_port[:addr], addr_port[:port]
     @vhost_port = vhost_port if vhost_port > 0
     if @application
-      send_request_application(vhost_addr, @vhost_port, @prove)
+      @output_request =
+        send_request_application(vhost_addr, @vhost_port, @prove)
     else
-      send_request_transport(vhost_addr, @vhost_port, @prove)
+      @output_request =
+        send_request_transport(vhost_addr, @vhost_port, @prove)
     end
   end
 
@@ -224,13 +227,17 @@ RSpec::Matchers.define :transfer do |nodes|
     result =  "expected #{vhost} to transfer requests to"
     result << nodes.to_s
     result << @chain_str
-    result << ', but did not.'
+    result << ", but did not.\n"
+    result << "requested:\n"
+    result << @output_request
   end
 
   failure_message_for_should_not do |vhost|
     result =  "expected #{vhost} not to transfer requests to"
     result << nodes.to_s
     result << @chain_str
-    result << ', but did.'
+    result << ", but did.\n"
+    result << "requested:\n"
+    result << @output_request
   end
 end

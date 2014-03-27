@@ -33,12 +33,13 @@ module Lbspec
       opt
     end
     def self.exec_command(command, node = nil)
+      output = command
       if node
         Net::SSH.start(node, nil, config: true) do |ssh|
-          ssh.exec!(command)
+          output << ssh.exec!(command).to_s
         end
       else
-        `#{command}`
+        output << `#{command}`.to_s
       end
     end
   end
