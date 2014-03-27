@@ -182,20 +182,23 @@ RSpec::Matchers.define :transfer do |nodes|
   def exec_capture(channel)
     command = capture_command(@node_port, @prove)
     channel.exec command do |ch, stream, data|
-      num_match = 0
       whole_data = ''
       ch.on_data do |c, d|
         whole_data << d
-        if /#{@prove}/ =~ whole_data
-          if @include_str.nil?
-            num_match += 1
-          elsif /#{@include_str}/ =~ whole_data
-            num_match += 1
-          end
-        end
-        @result = true if num_match > 0
+        patterns = [@prove]
+        patterns << @include_str if @include_str
+        @result = match_all?(whole_data, patterns)
       end
     end
+  end
+
+  def match_all?(string, patterns)
+    num_patterns, num_match = 0, 0
+    patterns.each do |pat|
+      num_patterns += 1
+      num_match += 1 if /#{pat}/ =~ string
+    end
+    num_match == num_patterns
   end
 
   def capture_command(port, prove)
