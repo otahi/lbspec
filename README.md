@@ -29,7 +29,9 @@ You can use lbspec to test load balancers.
 You can use following chains with `#transfer`.
 
 - port
- - Tests if a virtual host transfers requests to specified port on target nodes.
+  - Tests if a virtual host transfers requests to specified port on target nodes.
+- include
+  - Tests if a virtual host transfers requests include string.
 - tcp
   - Tests with tcp packets for the virtual host.
 - udp
