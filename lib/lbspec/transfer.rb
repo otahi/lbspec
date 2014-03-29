@@ -25,11 +25,12 @@ RSpec::Matchers.define :transfer do |nodes|
   @request_node = nil
   @include_str = nil
   @output_request = ''
+  @output_capture = []
   @options = {}
 
   @capture_command = lambda do |port, prove|
     port_str = port > 0 ? "port #{port}" : ''
-    "sudo ngrep #{prove} #{port_str} | grep -v \"match:\""
+    "sudo ngrep -W byline #{prove} #{port_str} | grep -v \"match:\""
   end
 
   @udp_request_command = lambda do |addr, port, prove|
@@ -140,21 +141,31 @@ RSpec::Matchers.define :transfer do |nodes|
     @threads << Thread.new do
       Net::SSH.start(node, nil, config: true) do |ssh|
         @ssh << ssh
-        ssh.open_channel { |channel| run_check channel }
+        ssh.open_channel do |channel|
+          output = run_check channel
+          @output_capture.push(node: node, output: output)
+        end
       end
     end
   end
 
   def run_check(channel)
+    output = ''
     channel.request_pty do |chan, success|
       fail 'Could not obtain pty' unless success
       @nodes_connected.push(true)
-      exec_capture(chan)
+      output = exec_capture(chan)
     end
+    output
   end
 
   def exec_capture(channel)
     command = capture_command(@node_port, @prove)
+    output = exec_capture_command(channel, command)
+    command + "\n" +  output
+  end
+
+  def exec_capture_command(channel, command)
     channel.exec command do |ch, stream, data|
       whole_data = ''
       ch.on_data do |c, d|
@@ -163,6 +174,7 @@ RSpec::Matchers.define :transfer do |nodes|
         patterns << @include_str if @include_str
         @result = match_all?(whole_data, patterns)
       end
+      whole_data
     end
   end
 
@@ -225,19 +237,25 @@ RSpec::Matchers.define :transfer do |nodes|
 
   failure_message_for_should do |vhost|
     result =  "expected #{vhost} to transfer requests to"
-    result << nodes.to_s
-    result << @chain_str
-    result << ", but did not.\n"
-    result << "requested:\n"
-    result << @output_request
+    result <<
+      result_string(nodes, @chain_str, @output_request, @output_capture)
   end
 
   failure_message_for_should_not do |vhost|
     result =  "expected #{vhost} not to transfer requests to"
-    result << nodes.to_s
-    result << @chain_str
-    result << ", but did.\n"
-    result << "requested:\n"
-    result << @output_request
+    result <<
+      result_string(nodes, @chain_str, @output_request, @output_capture)
+  end
+
+  def result_string(nodes, chain_str, request_str, capture_str)
+    result = nodes.to_s + chain_str
+    result << ", but did.\n" + "requested:\n"
+    result << request_str.gsub(/^/, '  ')
+    result << "\ncaptured:\n"
+    @output_capture.each do |o|
+      result << o[:node].gsub(/^/, '  ') + "\n"
+      result << o[:output].gsub(/^/, '    ') + "\n"
+    end
+    result
   end
 end
