@@ -40,10 +40,10 @@ You can use following chains with `#transfer`.
   - Tests with an http request for the virtual host.
 - https
   - Tests with an https request for the virtual host.
-- path
-  - Specifies a path for http or https requests.
 - from
   - Specifies which host sends to the virtual host.
+- path
+  - Specifies a path for http or https requests.
 - options
   - Options which can be used in http or https request commands.
   - You can use `options` if you configure request commands or capture commands.
@@ -51,7 +51,8 @@ You can use following chains with `#transfer`.
 ## Requires
 * Users need to be able to login with ssh to the target nodes.
 * Users need to be able to `sudo` on the target nodes.
-* netcat and ngrep are needed to be installed.
+* Netcat and curl are needed on requesting host.
+* Grep and ngrep are needed on capturing host.
 
 ## Limitations
 * Lbspec uses only ssh configuration in ~/.ssh/config
@@ -87,23 +88,23 @@ describe 'vhost_c:80' do
   it { should transfer(['node_b','node_c']).port(53).udp }
 end
 
-describe 'vhost_c:80' do
-  it { should transfer('node_c').http.path('/test/') }
+describe 'vhost_c:80/test/' do
+  it { should transfer('node_c').http }
 end
 
 describe 'vhost_c:443' do
-  it { should transfer(['node_b','node_c']).port(80).https.path('/test/') }
+  it { should transfer(['node_b','node_c']).port(80).https.path('/test/' }
 end
 
-describe 'vhost_c:443' do
+describe 'vhost_c:443/test/' do
   it do
-    should transfer(['node_b','node_c']).port(80).https.path('/test/')
+    should transfer(['node_b','node_c']).port(80).https
       .options(ignore_valid_ssl: true)
   end
 end
 
-describe 'vhost_c:80' do
-  it { should transfer('node_c').http.path('/test/').from('node_a') }
+describe 'vhost_c:80/test/' do
+  it { should transfer('node_c').http.from('node_a') }
 end
 
 ```
@@ -111,46 +112,15 @@ end
 ### #transfer
 
  1. ssh to nodes
- 2. cupture probe
- 3. access with probe
+   - ssh to the nodes which receive requests via the target virtual host
+ 2. capture probe
+   - capture packets on the nodes 
+ 3. access to the nodes with probe
+   - netcat or curl to the virtual host with prove
  4. judge
+   - judge if expected request are captured on the capturing nodes
 
 ![#tranfer works][1]
-
-
-## Configuration
-### #transfer
-You can change how to capture probes and access to `vhost` with probes. You can replace default procedures to your procedures in spec_helpers or .spec files as follows. If you use `Lbspec::Util.exec_command()`, you can specify the node which generate request.
-```ruby
-RSpec.configuration.lbspec_capture_command =
-  lambda do |port, prove|
-  port_str = port > 0 ? "port #{port}" : ''
-  "sudo ngrep #{prove} #{port_str} | grep -v \"match:\""
-end
-
-RSpec.configuration.lbspec_https_request_command =
-  lambda do |addr, port, path, prove|
-  uri = 'https://' + "#{addr}:#{port}#{path}?#{prove}"
-  Lbspec::Util.exec_command("curl -o /dev/null -sk #{uri}", @request_node)
-end
-```
-You can also use the procedures with `options` with a chain `options`.
-```ruby
-RSpec.configuration.lbspec_https_request_command =
-  lambda do |addr, port, path, prove|
-  opt =  @options[:timeout] ? " -m #{@options[:timeout]}" : ''
-  opt << (@options[:ignore_valid_ssl] ? ' -k' : '')
-  Lbspec::Util.exec_command("curl -o /dev/null -s #{opt} #{uri}", @request_node)
-end
-```
-
-You can replace following items.
-
- - `lbspec_capture_command` with `|port, prove|`
- - `lbspec_udp_request_command` with `|addr, port, prove|`
- - `lbspec_tcp_request_command` with `|addr, port, prove|`
- - `lbspec_http_request_command` with `|addr, port, path, prove|`
- - `lbspec_https_request_command` with `|addr, port, path, prove|`
 
 ## Contributing
 

@@ -7,31 +7,15 @@ module Lbspec
       t = Time.now
       t.to_i.to_s + t.nsec.to_s
     end
-    def self.split_addr_port(addr_port_str)
-      port = 0
-      splits = addr_port_str.split(':')
-      addr = splits.first
-      port = splits.last.to_i if /\d+/ =~ splits.last
-      { addr: addr, port: port }
+
+    def self.split_addr_port_path(addr_port_path)
+      splits = addr_port_path.split(/[:\/]/)
+      addr = splits[0]
+      port = (/\d+/ =~ splits[1]) ? splits[1].to_i : nil
+      path = (/\d+/ =~ splits[1]) ? '/' + splits[2].to_s : '/' + splits[1].to_s
+      [addr, port, path]
     end
-    def self.build_curl_command(uri, options)
-      env, opt = '', ''
-      opt << (options[:timeout] ? " -m #{options[:timeout]}" : '')
-      opt << (options[:ignore_valid_ssl] ? ' -k' : '')
-      opt << (options[:proxy] ? %Q( -x "#{options[:proxy]}") : '')
-      if options[:noproxy]
-        env << %Q( no_proxy="#{options[:noproxy]}")
-        env << %Q( NO_PROXY="#{options[:noproxy]}")
-      end
-      opt << header_option(options[:header])
-      %Q(#{env} curl -o /dev/null -s #{opt} '#{uri}')
-    end
-    def self.header_option(header)
-      opt = ''
-      header = [header] unless header.respond_to? :each
-      header.each { |h| opt << %Q( -H '#{h}') }
-      opt
-    end
+
     def self.exec_command(command, node = nil)
       output = command
       if node
