@@ -33,25 +33,6 @@ RSpec::Matchers.define :transfer do |nodes|
     "sudo ngrep -W byline #{prove} #{port_str} | grep -v \"match:\""
   end
 
-  @udp_request_command = lambda do |addr, port, prove|
-    Lbspec::Util
-      .exec_command("echo #{prove} | nc -u #{addr} #{port}", @request_node)
-  end
-  @tcp_request_command = lambda do |addr, port, prove|
-    Lbspec::Util
-      .exec_command("echo #{prove} | nc #{addr} #{port}", @request_node)
-  end
-  @http_request_command = lambda do |addr, port, path, prove|
-    uri = 'http://' + "#{addr}:#{port}#{path}?#{prove}"
-    command = Lbspec::Util.build_curl_command(uri, @options)
-    Lbspec::Util.exec_command(command, @request_node)
-  end
-  @https_request_command = lambda do |addr, port, path, prove|
-    uri = 'https://' + "#{addr}:#{port}#{path}?#{prove}"
-    command = Lbspec::Util.build_curl_command(uri, @options)
-    Lbspec::Util.exec_command(command, @request_node)
-  end
-
   @result = false
   Thread.abort_on_exception = true
 
@@ -60,7 +41,15 @@ RSpec::Matchers.define :transfer do |nodes|
     override_commands
     capture_on_nodes nodes
     wait_nodes_connected nodes
-    send_request vhost
+    request = Lbspec::Request.new(
+                                  vhost,
+                                  @request_node,
+                                  protocol: @protocol,
+                                  application: @application,
+                                  path: @http_path,
+                                  options: @options
+                                  )
+    @output_request = request.send(@prove)
     disconnect_nodes
     @result
   end
