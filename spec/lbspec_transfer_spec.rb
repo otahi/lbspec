@@ -55,7 +55,7 @@ describe Lbspec do
       'vhost_a:443/test'.should transfer('node_a').https
     end
     it 'should test transfer vhost:443 with options for requests' do
-      'vhost_a:443/test'.should transfer('node_a').https
+      'vhost_a:443'.should transfer('node_a').https.path('/test')
         .options(ignore_valid_ssl: true)
       'vhost_a:443/test'.should transfer('node_a').https
         .options(ignore_valid_ssl: false, timeout: 5)

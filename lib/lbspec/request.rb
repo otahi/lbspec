@@ -5,15 +5,14 @@ require 'lbspec'
 module Lbspec
   # Lbspec::Request reqresent of request
   class Request
-    def initialize(target, from = nil,
-                   protocol = :tcp, application = :http,
-                   options = {})
+    def initialize(target, from = nil, options = {})
       @addr, @port, @path =
         Lbspec::Util.split_addr_port_path(target)
       @from = from
-      @protocol = protocol
-      @application = application
-      @options = options
+      @protocol = options[:protocol] ? options[:protocol] : nil
+      @application = options[:application] ? options[:application] : nil
+      @path = options[:path] if options[:path]
+      @options = options[:options] ? options[:options] : {}
     end
 
     def send(prove)

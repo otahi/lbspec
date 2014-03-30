@@ -42,6 +42,8 @@ You can use following chains with `#transfer`.
   - Tests with an https request for the virtual host.
 - from
   - Specifies which host sends to the virtual host.
+- path
+  - Specifies a path for http or https requests.
 - options
   - Options which can be used in http or https request commands.
   - You can use `options` if you configure request commands or capture commands.
@@ -90,8 +92,8 @@ describe 'vhost_c:80/test/' do
   it { should transfer('node_c').http }
 end
 
-describe 'vhost_c:443/test/' do
-  it { should transfer(['node_b','node_c']).port(80).https }
+describe 'vhost_c:443' do
+  it { should transfer(['node_b','node_c']).port(80).https.path('/test/' }
 end
 
 describe 'vhost_c:443/test/' do

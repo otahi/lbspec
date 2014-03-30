@@ -8,6 +8,7 @@ RSpec::Matchers.define :transfer do |nodes|
 
   @include_str = nil
   @port = 0
+  @path = nil
   @chain_str = ''
   @options = {}
   @output_request = ''
@@ -19,7 +20,9 @@ RSpec::Matchers.define :transfer do |nodes|
       Lbspec::Capture.new(nodes, @port, prove, @include_str)
     capture.open
     request =
-      Lbspec::Request.new(vhost, @from, @protocol, @application, @options)
+      Lbspec::Request.new(vhost, @from,
+                          protocol: @protocol, application: @application,
+                          path: @path, options: @options)
     @output_request = request.send(prove)
     @output_capture = capture.output
     capture.close
@@ -61,6 +64,11 @@ RSpec::Matchers.define :transfer do |nodes|
   chain :include do |str|
     @include_str = str
     @chain_str << " including #{str}"
+  end
+
+  chain :path do |path|
+    @path = path
+    @chain_str << " via #{path}"
   end
 
   chain :options do |options|
