@@ -4,58 +4,30 @@ require 'rspec/core'
 require 'rspec/expectations'
 require 'lbspec'
 
-RSpec.configure do |c|
-  c.add_setting :lbspec_capture_command      , default: nil
-  c.add_setting :lbspec_udp_request_command  , default: nil
-  c.add_setting :lbspec_tcp_request_command  , default: nil
-  c.add_setting :lbspec_http_request_command , default: nil
-  c.add_setting :lbspec_https_request_command, default: nil
-end
-
 RSpec::Matchers.define :transfer do |nodes|
-  @ssh = []
-  @threads = []
-  @nodes_connected = []
-  @chain_str = ''
-  @protocol = nil
-  @application = nil
-  @http_path = '/'
-  @vhost_port = 80
-  @node_port = 0
-  @request_node = nil
+
   @include_str = nil
-  @output_request = ''
-  @output_capture = []
+  @port = 0
+  @chain_str = ''
   @options = {}
-
-  @capture_command = lambda do |port, prove|
-    port_str = port > 0 ? "port #{port}" : ''
-    "sudo ngrep -W byline #{prove} #{port_str} | grep -v \"match:\""
-  end
-
-  @result = false
-  Thread.abort_on_exception = true
+  @output_request = ''
+  @output_capture = ''
 
   match do |vhost|
-    @prove = Lbspec::Util.create_prove
-    override_commands
-    capture_on_nodes nodes
-    wait_nodes_connected nodes
-    request = Lbspec::Request.new(
-                                  vhost,
-                                  @request_node,
-                                  protocol: @protocol,
-                                  application: @application,
-                                  path: @http_path,
-                                  options: @options
-                                  )
-    @output_request = request.send(@prove)
-    disconnect_nodes
-    @result
+    prove = Lbspec::Util.create_prove
+    capture =
+      Lbspec::Capture.new(nodes, @port, prove, @include_str)
+    capture.open
+    request =
+      Lbspec::Request.new(vhost, @from, @protocol, @application, @options)
+    @output_request = request.send(prove)
+    @output_capture = capture.output
+    capture.close
+    capture.result
   end
 
   chain :port do |port|
-    @node_port = port
+    @port = port
     @chain_str << " port #{port}"
   end
 
@@ -81,13 +53,8 @@ RSpec::Matchers.define :transfer do |nodes|
     @chain_str << ' https'
   end
 
-  chain :path do |path|
-    @http_path = path
-    @chain_str << " via #{path}"
-  end
-
   chain :from do |from|
-    @request_node = from
+    @from = from
     @chain_str << " from #{from}"
   end
 
@@ -98,126 +65,6 @@ RSpec::Matchers.define :transfer do |nodes|
 
   chain :options do |options|
     @options = options
-  end
-
-  def override_commands
-    capture = RSpec.configuration.lbspec_capture_command
-    udp_request = RSpec.configuration.lbspec_udp_request_command
-    tcp_request = RSpec.configuration.lbspec_tcp_request_command
-    http_request = RSpec.configuration.lbspec_http_request_command
-    https_request = RSpec.configuration.lbspec_https_request_command
-    @capture_command = capture if capture
-    @udp_request_command = udp_request if udp_request
-    @tcp_request_command = tcp_request if tcp_request
-    @http_request_command = http_request if http_request
-    @https_request_command = https_request if https_request
-  end
-
-  def wait_nodes_connected(nodes)
-    nodes_length = (nodes.respond_to? :each) ? nodes.length : 1
-    sleep 0.5 until @nodes_connected.length == nodes_length
-  end
-
-  def capture_on_nodes(nodes)
-    if nodes.respond_to? :each
-      nodes.each { |node| capture_on_node(node) }
-    else
-      capture_on_node(nodes)
-    end
-  end
-
-  def capture_on_node(node)
-    @threads << Thread.new do
-      Net::SSH.start(node, nil, config: true) do |ssh|
-        @ssh << ssh
-        ssh.open_channel do |channel|
-          output = run_check channel
-          @output_capture.push(node: node, output: output)
-        end
-      end
-    end
-  end
-
-  def run_check(channel)
-    output = ''
-    channel.request_pty do |chan, success|
-      fail 'Could not obtain pty' unless success
-      @nodes_connected.push(true)
-      output = exec_capture(chan)
-    end
-    output
-  end
-
-  def exec_capture(channel)
-    command = capture_command(@node_port, @prove)
-    output = exec_capture_command(channel, command)
-    command + "\n" +  output
-  end
-
-  def exec_capture_command(channel, command)
-    channel.exec command do |ch, stream, data|
-      whole_data = ''
-      ch.on_data do |c, d|
-        whole_data << d
-        patterns = [@prove]
-        patterns << @include_str if @include_str
-        @result = match_all?(whole_data, patterns)
-      end
-      whole_data
-    end
-  end
-
-  def match_all?(string, patterns)
-    num_patterns, num_match = 0, 0
-    patterns.each do |pat|
-      num_patterns += 1
-      num_match += 1 if /#{pat}/ =~ string
-    end
-    num_match == num_patterns
-  end
-
-  def capture_command(port, prove)
-    @capture_command[port, prove]
-  end
-
-  def disconnect_nodes
-    @threads.each do |t|
-      t.kill
-    end
-    @ssh.each do |ssh|
-      ssh.close unless ssh.closed?
-    end
-  end
-
-  def send_request(vhost)
-    addr_port = Lbspec::Util.split_addr_port(vhost.to_s)
-    vhost_addr, vhost_port = addr_port[:addr], addr_port[:port]
-    @vhost_port = vhost_port if vhost_port > 0
-    if @application
-      @output_request =
-        send_request_application(vhost_addr, @vhost_port, @prove)
-    else
-      @output_request =
-        send_request_transport(vhost_addr, @vhost_port, @prove)
-    end
-  end
-
-  def send_request_application(addr, port, prove)
-    case @application
-    when :http
-      @http_request_command[addr, port, @http_path, prove]
-    when :https
-      @https_request_command[addr, port, @http_path, prove]
-    end
-  end
-
-  def send_request_transport(addr, port, prove)
-    case @protocol
-    when :udp
-      @udp_request_command[addr, port, prove]
-    else
-      @tcp_request_command[addr, port, prove]
-    end
   end
 
   description do

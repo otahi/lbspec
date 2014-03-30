@@ -21,6 +21,7 @@ describe Lbspec do
       ssh_connected.stub(:exec!).and_return(true)
       Net::SSH.stub(:start).and_yield(ssh_connected).and_return(ssh_connected)
       Kernel.stub(:system).and_return true
+      Kernel.stub(:`).and_return(key + include_str) # `
     end
 
     it 'should test transfer a node' do
@@ -51,17 +52,17 @@ describe Lbspec do
       'vhost_a:443'.should transfer('node_a').port(80).https
     end
     it 'should test transfer vhost:443 and a node with https /test' do
-      'vhost_a:443'.should transfer('node_a').https.path('/test')
+      'vhost_a:443/test'.should transfer('node_a').https
     end
     it 'should test transfer vhost:443 with options for requests' do
-      'vhost_a:443'.should transfer('node_a').https.path('/test')
+      'vhost_a:443/test'.should transfer('node_a').https
         .options(ignore_valid_ssl: true)
-      'vhost_a:443'.should transfer('node_a').https.path('/test')
+      'vhost_a:443/test'.should transfer('node_a').https
         .options(ignore_valid_ssl: false, timeout: 5)
     end
     it 'should test transfer vhost:443 requests from specified host' do
-      'vhost_a:443'.should transfer('node_a')
-        .https.path('/test').from('node_a')
+      'vhost_a:443/test'.should transfer('node_a')
+        .https.from('node_a')
     end
     it 'should test transfer vhost:80 and a node with http includes ' do
       'vhost_a:80'.should transfer('node_a').http

@@ -5,22 +5,15 @@ require 'lbspec'
 module Lbspec
   # Lbspec::Request reqresent of request
   class Request
-    @request_host = nil
-    @protocol = nil
-    @application = nil
-    @path = '/'
-    @port = 80
-    @options = {}
-
-    def initialize(target, request_host, options = {})
-      addr_port = Lbspec::Util.split_addr_port(target.to_s)
-      @addr, @port = addr_port[:addr], addr_port[:port]
-      @request_host = request_host
-      @protocol = options[:protocol] ? options[:protocol] : nil
-      @application = options[:application] ? options[:application] : nil
-      @path = options[:path] ? options[:path] : '/'
-      @port = options[:port] ? options[:port] : 80
-      @options = options[:options] ? options[:options] : {}
+    def initialize(target, from = nil,
+                   protocol = :tcp, application = :http,
+                   options = {})
+      @addr, @port, @path =
+        Lbspec::Util.split_addr_port_path(target)
+      @from = from
+      @protocol = protocol
+      @application = application
+      @options = options
     end
 
     def send(prove)
@@ -36,14 +29,24 @@ module Lbspec
     def send_application(prove)
       case @application
       when :http
-        uri = 'http://' + "#{@addr}:#{@port}#{@path}?#{prove}"
-        command = build_curl_command(uri, @options)
-        Lbspec::Util.exec_command(command, @request_host)
+        send_http(prove)
       when :https
-        uri = 'https://' + "#{@addr}:#{@port}#{@path}?#{prove}"
-        command = build_curl_command(uri, @options)
-        Lbspec::Util.exec_command(command, @request_host)
+        send_https(prove)
       end
+    end
+
+    def send_http(prove)
+      @port = 80 unless @port
+      uri = 'http://' + "#{@addr}:#{@port}#{@path}?#{prove}"
+      command = build_curl_command(uri, @options)
+      Lbspec::Util.exec_command(command, @from)
+    end
+
+    def send_https(prove)
+      @port = 443 unless @port == 0
+      uri = 'https://' + "#{@addr}:#{@port}#{@path}?#{prove}"
+      command = build_curl_command(uri, @options)
+      Lbspec::Util.exec_command(command, @from)
     end
 
     def build_curl_command(uri, options = {})
@@ -69,14 +72,22 @@ module Lbspec
     def send_transport(prove)
       case @protocol
       when :udp
-        Lbspec::Util
-          .exec_command("echo #{prove} | nc -u #{@addr} #{@port}",
-                        @request_host)
+        send_udp(prove)
       else
-        Lbspec::Util
-          .exec_command("echo #{prove} | nc #{@addr} #{@port}",
-                        @request_host)
+        send_tcp(prove)
       end
+    end
+
+    def send_udp(prove)
+      @port = 53 unless @port
+      Lbspec::Util
+        .exec_command("echo #{prove} | nc -u #{@addr} #{@port}", @from)
+    end
+
+    def send_tcp(prove)
+      @port = 80 unless @port
+      Lbspec::Util
+        .exec_command("echo #{prove} | nc #{@addr} #{@port}", @from)
     end
   end
 end
