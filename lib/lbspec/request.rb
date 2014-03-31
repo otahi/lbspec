@@ -15,7 +15,7 @@ module Lbspec
       @options = options[:options] ? options[:options] : {}
     end
 
-    def send(prove)
+    def send(prove = nil)
       if @application
         send_application(prove)
       else

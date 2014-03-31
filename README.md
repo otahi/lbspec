@@ -48,6 +48,31 @@ You can use following chains with `#transfer`.
   - Options which can be used in http or https request commands.
   - You can use `options` if you configure request commands or capture commands.
 
+### #respond
+`#respond` tests if a virtual host on a load balancer respond as same as expected.
+
+#### chains
+You can use following chains with `#respond`.
+
+- tcp
+  - Tests with tcp packets for the virtual host.
+- udp
+  - Tests with udp packets for the virtual host.
+- http
+  - Tests with an http request for the virtual host.
+- https
+  - Tests with an https request for the virtual host.
+- from
+  - Specifies which host sends to the virtual host.
+- path
+  - Specifies a path for http or https requests.
+- with
+  - Specifies a string included in requests.
+- options
+  - Options which can be used in http or https request commands.
+  - You can use `options` if you configure request commands or capture commands.
+
+
 ## Requires
 * Users need to be able to login with ssh to the target nodes.
 * Users need to be able to `sudo` on the target nodes.
@@ -74,14 +99,17 @@ require_relative 'spec_helper'
 
 describe 'vhost_a' do
   it { should transfer('node_a') }
+  it { should respond('200 OK') }
 end
 
 describe 'vhost_b' do
   it { should transfer(['node_b','node_c']) }
+  it { should respond('200 OK') }
 end
 
 describe 'vhost_c:80' do
   it { should transfer(['node_b','node_c']).port(80) }
+  it { should respond('404') }
 end
 
 describe 'vhost_c:80' do
@@ -90,15 +118,20 @@ end
 
 describe 'vhost_c:80/test/' do
   it { should transfer('node_c').http }
+  it { should respond('200 OK').http }
 end
 
 describe 'vhost_c:443' do
   it { should transfer(['node_b','node_c']).port(80).https.path('/test/' }
+  it { should respond('200 OK').https.path('/test/') }
 end
 
 describe 'vhost_c:443/test/' do
   it do
     should transfer(['node_b','node_c']).port(80).https
+      .options(ignore_valid_ssl: true)
+  end
+  it do should respond('200 OK').path('/test/').https
       .options(ignore_valid_ssl: true)
   end
 end
