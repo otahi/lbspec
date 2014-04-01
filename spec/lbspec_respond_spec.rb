@@ -10,6 +10,10 @@ describe Lbspec do
         Lbspec::Util.stub(:exec_command).and_return '200 OK'
         'vhost_a'.should respond('200 OK')
       end
+      it 'should test vhost:80 responds with 200 OK by request with options' do
+        Lbspec::Util.stub(:exec_command).and_return '200 OK'
+        'vhost_a:443'.should respond('200 OK').http.path('/test')
+      end
       it 'should test vhost:443 responds with 404 by request with options' do
         Lbspec::Util.stub(:exec_command).and_return '404 Not Found'
         'vhost_a:443'.should respond('404').https.path('/test')
@@ -46,6 +50,13 @@ describe Lbspec do
         Lbspec::Util.stub(:exec_command).and_return '220'
         'vhost_a:25'.should respond('220')
           .udp.with('HELO test.example.com')
+      end
+    end
+    context 'description works with 200 OK' do
+      subject { 'vhost_a' }
+      it  do
+        Lbspec::Util.stub(:exec_command).and_return '200 OK'
+        should respond('200 OK')
       end
     end
   end
