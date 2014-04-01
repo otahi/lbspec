@@ -54,11 +54,11 @@ module Lbspec
       opt << (options[:ignore_valid_ssl] ? ' -k' : '')
       opt << (options[:proxy] ? %Q( -x "#{options[:proxy]}") : '')
       if options[:noproxy]
-        env << %Q( no_proxy="#{options[:noproxy]}")
-        env << %Q( NO_PROXY="#{options[:noproxy]}")
+        env << %Q(no_proxy="#{options[:noproxy]}" )
+        env << %Q(NO_PROXY="#{options[:noproxy]}" )
       end
       opt << header_option(options[:header])
-      %Q(#{env} curl -o /dev/null -s #{opt} '#{uri}')
+      %Q(#{env}curl -i -s #{opt} '#{uri}')
     end
 
     def header_option(header)

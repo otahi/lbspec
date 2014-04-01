@@ -68,7 +68,7 @@ RSpec::Matchers.define :respond do |expect|
   end
 
   description do
-    "respond #{@expect} #{@chain_str}."
+    "respond #{@expect} #{@chain_str}"
   end
 
   failure_message_for_should do |vhost|
@@ -82,7 +82,7 @@ RSpec::Matchers.define :respond do |expect|
   end
 
   def result_string
-    result << ", but did.\n" + "requested:\n"
+    result =  ", but did.\n" + "requested:\n"
     result << request_str.gsub(/^/, '  ')
   end
 end

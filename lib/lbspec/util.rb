@@ -17,7 +17,7 @@ module Lbspec
     end
 
     def self.exec_command(command, node = nil)
-      output = command
+      output = command + "\n"
       if node
         Net::SSH.start(node, nil, config: true) do |ssh|
           output << ssh.exec!(command).to_s
