@@ -81,7 +81,9 @@ You can use following chains with `#healthcheck`.
 - include
   - Tests if healthchecks include string.
 - from
-  - Tests if healthchecks from specific address.
+  - Tests if healthchecks are from specific address.
+- interval
+  - Tests if healthchecks are at intervals of specific time.
 - port
   - Tests if healthchecks are on specified port on target nodes.
 - icmp
