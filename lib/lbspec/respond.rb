@@ -21,7 +21,7 @@ RSpec::Matchers.define :respond do |expect|
                           protocol: @protocol, application: @application,
                           path: @path, options: @options)
     @output_request = request.send(@string)
-    @output_request.include?(expect)
+    @output_request.match(expect)
   end
 
   chain :tcp do
