@@ -5,16 +5,6 @@ require 'rspec/expectations'
 require 'lbspec'
 
 RSpec::Matchers.define :respond do |expect|
-
-  @expect = expect
-  @protocol = :tcp
-  @application = nil
-  @path = nil
-  @string = nil
-  @chain_str = ''
-  @options = {}
-  @output_request = ''
-
   match do |vhost|
     request =
       Lbspec::Request.new(vhost, @from,
@@ -27,40 +17,40 @@ RSpec::Matchers.define :respond do |expect|
   chain :tcp do
     @protocol = :tcp
     @application = nil
-    @chain_str << ' tcp'
+    Lbspec::Util.add_string(@chain_str, ' tcp')
   end
 
   chain :udp do
     @protocol = :udp
     @application = nil
-    @chain_str << ' udp'
+    Lbspec::Util.add_string(@chain_str, ' udp')
   end
 
   chain :http do
     @protocol = :tcp
     @application = :http
-    @chain_str << ' http'
+    Lbspec::Util.add_string(@chain_str, ' http')
   end
 
   chain :https do
     @protocol = :tcp
     @application = :https
-    @chain_str << ' https'
+    Lbspec::Util.add_string(@chain_str, ' https')
   end
 
   chain :from do |from|
     @from = from
-    @chain_str << " from #{from}"
+    Lbspec::Util.add_string(@chain_str, " from #{from}")
   end
 
   chain :path do |path|
     @path = path
-    @chain_str << " via #{path}"
+    Lbspec::Util.add_string(@chain_str, " via #{path}")
   end
 
   chain :with do |string|
     @string = string
-    @chain_str << " via #{string}"
+    Lbspec::Util.add_string(@chain_str, " via #{string}")
   end
 
   chain :options do |options|

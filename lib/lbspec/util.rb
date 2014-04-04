@@ -3,6 +3,14 @@
 module Lbspec
   # Lbspec::Util provides some utilities
   class Util
+    def self.add_string(target, addition)
+      if target.nil?
+        target = addition
+      else
+        target << addition
+      end
+    end
+
     def self.create_prove
       t = Time.now
       t.to_i.to_s + t.nsec.to_s

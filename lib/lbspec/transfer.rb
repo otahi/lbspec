@@ -5,15 +5,6 @@ require 'rspec/expectations'
 require 'lbspec'
 
 RSpec::Matchers.define :transfer do |nodes|
-
-  @include_str = nil
-  @port = 0
-  @path = nil
-  @chain_str = ''
-  @options = {}
-  @output_request = ''
-  @output_capture = ''
-
   match do |vhost|
     prove = Lbspec::Util.create_prove
     capture =
@@ -31,44 +22,44 @@ RSpec::Matchers.define :transfer do |nodes|
 
   chain :port do |port|
     @port = port
-    @chain_str << " port #{port}"
+    Lbspec::Util.add_string(@chain_str, " port #{port}")
   end
 
   chain :tcp do
     @protocol = :tcp
-    @chain_str << ' tcp'
+    Lbspec::Util.add_string(@chain_str, ' tcp')
   end
 
   chain :udp do
     @protocol = :udp
-    @chain_str << ' udp'
+    Lbspec::Util.add_string(@chain_str, ' udp')
   end
 
   chain :http do
     @protocol = :tcp
     @application = :http
-    @chain_str << ' http'
+    Lbspec::Util.add_string(@chain_str, ' http')
   end
 
   chain :https do
     @protocol = :tcp
     @application = :https
-    @chain_str << ' https'
+    Lbspec::Util.add_string(@chain_str, ' https')
   end
 
   chain :from do |from|
     @from = from
-    @chain_str << " from #{from}"
+    Lbspec::Util.add_string(@chain_str, " from #{from}")
   end
 
   chain :include do |str|
     @include_str = str
-    @chain_str << " including #{str}"
+    Lbspec::Util.add_string(@chain_str, " including #{str}")
   end
 
   chain :path do |path|
     @path = path
-    @chain_str << " via #{path}"
+    Lbspec::Util.add_string(@chain_str, " via #{path}")
   end
 
   chain :options do |options|
