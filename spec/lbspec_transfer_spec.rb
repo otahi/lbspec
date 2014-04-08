@@ -19,8 +19,7 @@ describe '#transfer' do
     ssh_connected.stub(:close)
     ssh_connected.stub(:exec!).and_return(true)
     Net::SSH.stub(:start).and_yield(ssh_connected).and_return(ssh_connected)
-    Kernel.stub(:system).and_return true
-    Kernel.stub(:`).and_return(key + include_str) # `
+    Lbspec::Util.stub(:`).and_return(key + include_str) # `
   end
 
   it 'should test transfer a node' do
