@@ -22,44 +22,44 @@ RSpec::Matchers.define :transfer do |nodes|
 
   chain :port do |port|
     @port = port
-    Lbspec::Util.add_string(@chain_str, " port #{port}")
+    @chain_str = Lbspec::Util.add_string(@chain_str, " port #{port}")
   end
 
   chain :tcp do
     @protocol = :tcp
-    Lbspec::Util.add_string(@chain_str, ' tcp')
+    @chain_str = Lbspec::Util.add_string(@chain_str, ' tcp')
   end
 
   chain :udp do
     @protocol = :udp
-    Lbspec::Util.add_string(@chain_str, ' udp')
+    @chain_str = Lbspec::Util.add_string(@chain_str, ' udp')
   end
 
   chain :http do
     @protocol = :tcp
     @application = :http
-    Lbspec::Util.add_string(@chain_str, ' http')
+    @chain_str = Lbspec::Util.add_string(@chain_str, ' http')
   end
 
   chain :https do
     @protocol = :tcp
     @application = :https
-    Lbspec::Util.add_string(@chain_str, ' https')
+    @chain_str = Lbspec::Util.add_string(@chain_str, ' https')
   end
 
   chain :from do |from|
     @from = from
-    Lbspec::Util.add_string(@chain_str, " from #{from}")
+    @chain_str = Lbspec::Util.add_string(@chain_str, " from #{from}")
   end
 
   chain :include do |str|
     @include_str = str
-    Lbspec::Util.add_string(@chain_str, " including #{str}")
+    @chain_str = Lbspec::Util.add_string(@chain_str, " including #{str}")
   end
 
   chain :path do |path|
     @path = path
-    Lbspec::Util.add_string(@chain_str, " via #{path}")
+    @chain_str = Lbspec::Util.add_string(@chain_str, " via #{path}")
   end
 
   chain :options do |options|
