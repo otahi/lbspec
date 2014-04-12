@@ -59,7 +59,7 @@ RSpec::Matchers.define :respond do |expect|
   end
 
   description do
-    "respond #{@expect} #{@chain_str}"
+    "respond #{@expect}#{@chain_str}."
   end
 
   failure_message_for_should do |vhost|
