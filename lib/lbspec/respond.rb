@@ -6,6 +6,7 @@ require 'lbspec'
 
 RSpec::Matchers.define :respond do |expect|
   match do |vhost|
+    @expect = expect
     request =
       Lbspec::Request.new(vhost, @from,
                           protocol: @protocol, application: @application,
