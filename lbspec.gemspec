@@ -19,12 +19,12 @@ Gem::Specification.new do |spec|
   spec.require_paths = ["lib"]
 
   spec.add_development_dependency "bundler", "~> 1.5"
-  spec.add_development_dependency "rake"
-  spec.add_development_dependency "rubocop"
-  spec.add_development_dependency "coveralls"
-  spec.add_development_dependency "debugger"
-  spec.add_development_dependency "highline"
+  spec.add_development_dependency "rake", "~> 10.2"
+  spec.add_development_dependency "rubocop", "~> 0.20"
+  spec.add_development_dependency "coveralls", "~> 0.7"
+  spec.add_development_dependency "debugger", "~> 1.6"
+  spec.add_development_dependency "highline", "~> 1.6"
 
-  spec.add_runtime_dependency "rspec"
-  spec.add_runtime_dependency "net-ssh"
+  spec.add_runtime_dependency "rspec", "~> 2.14"
+  spec.add_runtime_dependency "net-ssh", "~> 2.8"
 end
