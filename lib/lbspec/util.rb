@@ -27,16 +27,20 @@ module Lbspec
     def self.exec_command(command, node = nil)
       output = command + "\n"
       if node
-        # if there is no user for the node in ~/.ssh/config
-        # use current user name for login
-        user = Net::SSH::Config.for(node)[:user]
-        user = `whoami`.chomp unless user
-        Net::SSH.start(node, user, config: true, verbose: Logger::WARN) do |ssh|
+        options = { config: true, verbose: Logger::WARN }
+        Net::SSH.start(node, ssh_user(node), options) do |ssh|
           output << ssh.exec!(command).to_s
         end
       else
         output << `#{command}`.to_s
       end
+    end
+
+    def self.ssh_user(node)
+      # if there is no user for the node in ~/.ssh/config
+      # use current user name for login
+      user = Net::SSH::Config.for(node)[:user]
+      user ? user : `whoami`.chomp
     end
   end
 end
