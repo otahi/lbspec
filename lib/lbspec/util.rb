@@ -31,7 +31,7 @@ module Lbspec
         # use current user name for login
         user = Net::SSH::Config.for(node)[:user]
         user = `whoami`.chomp unless user
-        Net::SSH.start(node, user, config: true) do |ssh|
+        Net::SSH.start(node, user, config: true, verbose: Logger::WARN) do |ssh|
           output << ssh.exec!(command).to_s
         end
       else

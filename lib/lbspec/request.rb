@@ -58,7 +58,7 @@ module Lbspec
         env << %Q(NO_PROXY="#{options[:noproxy]}" )
       end
       opt << header_option(options[:header])
-      %Q(#{env}curl -i -s #{opt} '#{uri}')
+      %Q(#{env}curl -v -i -s #{opt} '#{uri}')
     end
 
     def header_option(header)
