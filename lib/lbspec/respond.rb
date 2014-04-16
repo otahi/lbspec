@@ -63,17 +63,18 @@ RSpec::Matchers.define :respond do |expect|
   end
 
   failure_message_for_should do |vhost|
-    result =  "expected #{vhost} to respond #{@expect}"
-    result << result_string
+    result_string(vhost, @expect)
   end
 
   failure_message_for_should_not do |vhost|
-    result =  "expected #{vhost} not to respond #{@expect}"
-    result << result_string
+    negative = true
+    result_string(vhost, @expect, negative)
   end
 
-  def result_string
-    result =  ", but did.\n" + "requested:\n"
+  def result_string(vhost, expect, negative = false)
+    negation = negative ? ' not' : ''
+    result =  "expected #{vhost}#{negation} to respond #{expect}"
+    result <<  ", but did#{negation}.\n" + "requested:\n"
     result << request_str.gsub(/^/, '  ')
   end
 end

@@ -71,26 +71,31 @@ RSpec::Matchers.define :transfer do |nodes|
   end
 
   failure_message_for_should do |vhost|
-    result =  "expected #{vhost} to transfer requests to"
-    result <<
-      result_string(nodes, @chain_str, @output_request, @output_capture)
+    result_string(nodes, @chain_str, @output_request, @output_capture)
   end
 
   failure_message_for_should_not do |vhost|
-    result =  "expected #{vhost} not to transfer requests to"
-    result <<
-      result_string(nodes, @chain_str, @output_request, @output_capture)
+    negative = true
+    result_string(nodes, @chain_str, @output_request, @output_capture,
+                  negative)
   end
 
-  def result_string(nodes, chain_str, request_str, capture_str)
-    result = nodes.to_s + chain_str
-    result << ", but did.\n" + "requested:\n"
+  def result_string(nodes, chain_str,
+                    request_str, capture_str, negative = false)
+    negation = negative ? ' not' : ''
+    result =  "expected #{vhost}#{negation} to transfer requests to"
+    result << nodes.to_s + chain_str
+    result << ", but did#{negation}.\n" + "requested:\n"
     result << request_str.gsub(/^/, '  ')
     result << "\ncaptured:\n"
+    result << result_capture
+    result
+  end
+
+  def result_capture
     @output_capture.each do |o|
       result << o[:node].gsub(/^/, '  ') + "\n"
       result << o[:output].gsub(/^/, '    ') + "\n"
     end
-    result
   end
 end
