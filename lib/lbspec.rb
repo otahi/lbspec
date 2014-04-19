@@ -2,6 +2,7 @@
 require 'lbspec/version'
 require 'lbspec/transfer'
 require 'lbspec/respond'
+require 'lbspec/healthcheck'
 require 'lbspec/request'
 require 'lbspec/capture'
 require 'lbspec/util'
