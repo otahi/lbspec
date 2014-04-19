@@ -5,15 +5,6 @@ require 'rspec/expectations'
 require 'lbspec'
 
 RSpec::Matchers.define :transfer do |nodes|
-
-  @include_str = nil
-  @port = 0
-  @path = nil
-  @chain_str = ''
-  @options = {}
-  @output_request = ''
-  @output_capture = ''
-
   match do |vhost|
     prove = Lbspec::Util.create_prove
     capture =
@@ -31,44 +22,44 @@ RSpec::Matchers.define :transfer do |nodes|
 
   chain :port do |port|
     @port = port
-    @chain_str << " port #{port}"
+    @chain_str = Lbspec::Util.add_string(@chain_str, " port #{port}")
   end
 
   chain :tcp do
     @protocol = :tcp
-    @chain_str << ' tcp'
+    @chain_str = Lbspec::Util.add_string(@chain_str, ' tcp')
   end
 
   chain :udp do
     @protocol = :udp
-    @chain_str << ' udp'
+    @chain_str = Lbspec::Util.add_string(@chain_str, ' udp')
   end
 
   chain :http do
     @protocol = :tcp
     @application = :http
-    @chain_str << ' http'
+    @chain_str = Lbspec::Util.add_string(@chain_str, ' http')
   end
 
   chain :https do
     @protocol = :tcp
     @application = :https
-    @chain_str << ' https'
+    @chain_str = Lbspec::Util.add_string(@chain_str, ' https')
   end
 
   chain :from do |from|
     @from = from
-    @chain_str << " from #{from}"
+    @chain_str = Lbspec::Util.add_string(@chain_str, " from #{from}")
   end
 
   chain :include do |str|
     @include_str = str
-    @chain_str << " including #{str}"
+    @chain_str = Lbspec::Util.add_string(@chain_str, " including #{str}")
   end
 
   chain :path do |path|
     @path = path
-    @chain_str << " via #{path}"
+    @chain_str = Lbspec::Util.add_string(@chain_str, " via #{path}")
   end
 
   chain :options do |options|
@@ -80,26 +71,31 @@ RSpec::Matchers.define :transfer do |nodes|
   end
 
   failure_message_for_should do |vhost|
-    result =  "expected #{vhost} to transfer requests to"
-    result <<
-      result_string(nodes, @chain_str, @output_request, @output_capture)
+    result_string(nodes, @chain_str, @output_request, @output_capture)
   end
 
   failure_message_for_should_not do |vhost|
-    result =  "expected #{vhost} not to transfer requests to"
-    result <<
-      result_string(nodes, @chain_str, @output_request, @output_capture)
+    negative = true
+    result_string(nodes, @chain_str, @output_request, @output_capture,
+                  negative)
   end
 
-  def result_string(nodes, chain_str, request_str, capture_str)
-    result = nodes.to_s + chain_str
-    result << ", but did.\n" + "requested:\n"
+  def result_string(nodes, chain_str,
+                    request_str, capture_str, negative = false)
+    negation = negative ? ' not' : ''
+    result =  "expected #{vhost}#{negation} to transfer requests to"
+    result << nodes.to_s + chain_str
+    result << ", but did#{negation}.\n" + "requested:\n"
     result << request_str.gsub(/^/, '  ')
     result << "\ncaptured:\n"
+    result << result_capture
+    result
+  end
+
+  def result_capture
     @output_capture.each do |o|
       result << o[:node].gsub(/^/, '  ') + "\n"
       result << o[:output].gsub(/^/, '    ') + "\n"
     end
-    result
   end
 end

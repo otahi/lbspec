@@ -31,7 +31,7 @@ You can use following chains with `#transfer`.
 - port
   - Tests if a virtual host transfers requests to specified port on target nodes.
 - include
-  - Tests if a virtual host transfers requests include string.
+  - Tests if requests a virtual host transferred include string or are matched with regular expression.
 - tcp
   - Tests with tcp packets for the virtual host.
 - udp
@@ -50,6 +50,7 @@ You can use following chains with `#transfer`.
 
 ### #respond
 `#respond` tests if a virtual host on a load balancer respond as same as expected.
+You can use both a string and a regular expression as a expectation.
 
 #### chains
 You can use following chains with `#respond`.

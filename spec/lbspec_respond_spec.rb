@@ -38,6 +38,11 @@ describe '#respond' do
       'vhost_a:443/test'.should_not respond('404')
         .https.from('node_a')
     end
+    it 'should test vhost:443/test does respond /^404/' do
+      Lbspec::Util.stub(:exec_command).and_return '404 Not Found'
+      'vhost_a:443/test'.should respond(/^404/)
+        .https.from('node_a')
+    end
   end
   context 'tcp/udp' do
     it 'should test vhost:25/tcp respond 220' do
@@ -47,7 +52,7 @@ describe '#respond' do
     end
     it 'should test vhost:53/udp respond ' do
       Lbspec::Util.stub(:exec_command).and_return '220'
-      'vhost_a:25'.should respond('220')
+      'vhost_a:53'.should respond('220')
         .udp.with('HELO test.example.com')
     end
   end

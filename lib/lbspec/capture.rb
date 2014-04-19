@@ -87,7 +87,7 @@ module Lbspec
       num_patterns, num_match = 0, 0
       patterns.each do |pat|
         num_patterns += 1
-        num_match += 1 if /#{pat}/ =~ string
+        num_match += 1 if string.match(pat)
       end
       num_match == num_patterns
     end
