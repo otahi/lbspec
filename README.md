@@ -78,7 +78,7 @@ You can use Logger to analyze.
 You can use Logger if you put codes in spec files or spec_helpers like this:
 
 ```ruby
-Lbspec::Util.logger_level = Logger::WARN
+Lbspec::Util.log_level = Logger::WARN
 ```
 
 or
