@@ -73,6 +73,21 @@ You can use following chains with `#respond`.
   - Options which can be used in http or https request commands.
   - You can use `options` if you configure request commands or capture commands.
 
+## Using Logger
+You can use Logger to analyze.
+You can use Logger if you put codes in spec files or spec_helpers like this:
+
+```ruby
+Lbspec::Util.log_level = Logger::WARN
+```
+
+or
+
+```ruby
+Lbspec::Util.logger = Logger.new('test.log')
+```
+
+The default Logger show Logger::ERROR level on STDOUT.
 
 ## Requires
 * Users need to be able to login with ssh to the target nodes.
