@@ -10,6 +10,12 @@ describe Lbspec::Util do
       Lbspec::Util.logger.should eql('test')
     end
   end
+  describe '#log_level' do
+    it 'should set/get log_level' do
+      Lbspec::Util.log_level = Logger::WARN
+      Lbspec::Util.log_level.should eql(Logger::WARN)
+    end
+  end
   describe '#log' do
     before :each do
       Lbspec::Util.logger = nil

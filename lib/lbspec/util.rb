@@ -3,9 +3,9 @@
 module Lbspec
   # Lbspec::Util provides some utilities
   class Util
+    @logger = nil
+    @log_level =  Logger::ERROR
     class << self
-      @logger = nil
-      @log_level =  Logger::ERROR
       attr_accessor :logger, :log_level
     end
 
