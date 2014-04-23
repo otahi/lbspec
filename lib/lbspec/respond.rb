@@ -6,6 +6,7 @@ require 'lbspec'
 
 RSpec::Matchers.define :respond do |expect|
   match do |vhost|
+    fail ArgumentError, '#respond must have non-nil argument' unless expect
     @expect = expect
     request =
       Lbspec::Request.new(vhost, @from,
@@ -40,16 +41,19 @@ RSpec::Matchers.define :respond do |expect|
   end
 
   chain :from do |from|
+    fail ArgumentError, '#from must have non-nil argument' unless from
     @from = from
     @chain_str = Lbspec::Util.add_string(@chain_str, " from #{from}")
   end
 
   chain :path do |path|
+    fail ArgumentError, '#path must have non-nil argument' unless path
     @path = path
     @chain_str = Lbspec::Util.add_string(@chain_str, " via #{path}")
   end
 
   chain :with do |string|
+    fail ArgumentError, '#with must have non-nil argument' unless string
     @string = string
     @chain_str = Lbspec::Util.add_string(@chain_str, " via #{string}")
   end

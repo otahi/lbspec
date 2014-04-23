@@ -6,6 +6,7 @@ require 'lbspec'
 
 RSpec::Matchers.define :transfer do |nodes|
   match do |vhost|
+    fail ArgumentError, '#transfer must have non-nil argument' unless nodes
     prove = Lbspec::Util.create_prove
     capture =
       Lbspec::Capture.new(nodes, @port, prove, @include_str)
@@ -21,6 +22,7 @@ RSpec::Matchers.define :transfer do |nodes|
   end
 
   chain :port do |port|
+    fail ArgumentError, '#port must have non-nil argument' unless port
     @port = port
     @chain_str = Lbspec::Util.add_string(@chain_str, " port #{port}")
   end
@@ -48,16 +50,19 @@ RSpec::Matchers.define :transfer do |nodes|
   end
 
   chain :from do |from|
+    fail ArgumentError, '#from must have non-nil argument' unless from
     @from = from
     @chain_str = Lbspec::Util.add_string(@chain_str, " from #{from}")
   end
 
   chain :include do |str|
+    fail ArgumentError, '#include must have non-nil argument' unless str
     @include_str = str
     @chain_str = Lbspec::Util.add_string(@chain_str, " including #{str}")
   end
 
   chain :path do |path|
+    fail ArgumentError, '#path must have non-nil argument' unless path
     @path = path
     @chain_str = Lbspec::Util.add_string(@chain_str, " via #{path}")
   end
