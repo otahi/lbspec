@@ -39,15 +39,26 @@ module Lbspec
     end
 
     def self.exec_command(command, node = nil)
-      output = command + "\n"
       if node
-        options = { config: true, verbose: log_level }
-        Net::SSH.start(node, ssh_user(node), options) do |ssh|
-          output << ssh.exec!(command).to_s
-        end
+        exec_command_remote(command, node)
       else
-        output << `#{command}`.to_s
+        exec_command_local(command)
       end
+    end
+
+    def self.exec_command_remote(command, node = nil)
+      output = command + "\n"
+      log.debug("ssh to #{node}:#{command}")
+      options = { config: true, verbose: log_level }
+      Net::SSH.start(node, ssh_user(node), options) do |ssh|
+        output << ssh.exec!(command).to_s
+      end
+    end
+
+    def self.exec_command_local(command)
+      output = command + "\n"
+      log.debug("execute locally: #{command}")
+      output << `#{command}`.to_s
     end
 
     def self.ssh_user(node)
@@ -55,6 +66,8 @@ module Lbspec
       # use current user name for login
       user = Net::SSH::Config.for(node)[:user]
       user ? user : `whoami`.chomp
+      log.debug("ssh #{node} as user:#{user}")
+      user
     end
   end
 end

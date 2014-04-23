@@ -19,6 +19,7 @@ module Lbspec
       @nodes_connected = []
       @result = false
       @output = []
+      Util.log.debug("#{self.class} initialized #{inspect}")
     end
 
     def open

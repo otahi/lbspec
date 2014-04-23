@@ -7,6 +7,7 @@ require 'lbspec'
 RSpec::Matchers.define :transfer do |nodes|
   match do |vhost|
     fail ArgumentError, '#transfer must have non-nil argument' unless nodes
+    log.debug("#transfer(#{nodes.inspect}) is called")
     prove = Lbspec::Util.create_prove
     capture =
       Lbspec::Capture.new(nodes, @port, prove, @include_str)
@@ -102,5 +103,9 @@ RSpec::Matchers.define :transfer do |nodes|
       result << o[:node].gsub(/^/, '  ') + "\n"
       result << o[:output].gsub(/^/, '    ') + "\n"
     end
+  end
+
+  def log
+    Lbspec::Util.log
   end
 end

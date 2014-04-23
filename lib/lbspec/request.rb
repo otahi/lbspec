@@ -13,6 +13,7 @@ module Lbspec
       @application = options[:application] ? options[:application] : nil
       @path = options[:path] if options[:path]
       @options = options[:options] ? options[:options] : {}
+      Util.log.debug("#{self.class} initialized #{inspect}")
     end
 
     def send(prove = nil)

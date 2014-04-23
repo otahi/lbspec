@@ -7,6 +7,7 @@ require 'lbspec'
 RSpec::Matchers.define :respond do |expect|
   match do |vhost|
     fail ArgumentError, '#respond must have non-nil argument' unless expect
+    log.debug("#respond(#{expect.inspect}) is called")
     @expect = expect
     request =
       Lbspec::Request.new(vhost, @from,
@@ -80,5 +81,9 @@ RSpec::Matchers.define :respond do |expect|
     result =  "expected #{vhost}#{negation} to respond #{expect}"
     result <<  ", but did#{negation}.\n" + "requested:\n"
     result << request_str.gsub(/^/, '  ')
+  end
+
+  def log
+    Lbspec::Util.log
   end
 end
