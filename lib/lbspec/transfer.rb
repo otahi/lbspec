@@ -8,6 +8,7 @@ RSpec::Matchers.define :transfer do |nodes|
   match do |vhost|
     fail ArgumentError, '#transfer must have non-nil argument' unless nodes
     log.debug("#transfer(#{nodes.inspect}) is called")
+    @vhost = vhost
     prove = Lbspec::Util.create_prove
     capture =
       Lbspec::Capture.new(nodes, @port, prove, @include_str)
@@ -76,33 +77,33 @@ RSpec::Matchers.define :transfer do |nodes|
     "transfer requests to #{nodes}#{@chain_str}."
   end
 
-  failure_message_for_should do |vhost|
-    result_string(nodes, @chain_str, @output_request, @output_capture)
+  failure_message_for_should do
+    result_string
   end
 
-  failure_message_for_should_not do |vhost|
+  failure_message_for_should_not do
     negative = true
-    result_string(nodes, @chain_str, @output_request, @output_capture,
-                  negative)
+    result_string(negative)
   end
 
-  def result_string(nodes, chain_str,
-                    request_str, capture_str, negative = false)
+  def result_string(negative = false)
     negation = negative ? ' not' : ''
-    result =  "expected #{vhost}#{negation} to transfer requests to"
-    result << nodes.to_s + chain_str
+    result =  "expected #{@vhost}#{negation} to transfer requests to"
+    result << @nodes.to_s + @chain_str
     result << ", but did#{negation}.\n" + "requested:\n"
-    result << request_str.gsub(/^/, '  ')
+    result << @output_request.gsub(/^/, '  ')
     result << "\ncaptured:\n"
     result << result_capture
     result
   end
 
   def result_capture
+    result = ''
     @output_capture.each do |o|
       result << o[:node].gsub(/^/, '  ') + "\n"
       result << o[:output].gsub(/^/, '    ') + "\n"
     end
+    result
   end
 
   def log

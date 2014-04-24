@@ -53,12 +53,14 @@ module Lbspec
       Net::SSH.start(node, ssh_user(node), options) do |ssh|
         output << ssh.exec!(command).to_s
       end
+      output
     end
 
     def self.exec_command_local(command)
       output = command + "\n"
       log.debug("execute locally: #{command}")
       output << `#{command}`.to_s
+      output
     end
 
     def self.ssh_user(node)
