@@ -88,6 +88,27 @@ Lbspec::Util.logger = Logger.new('test.log')
 ```
 
 The default Logger show Logger::ERROR level on STDOUT.
+=======
+### #haelthcheck
+`#healthcheck` tests if a load balancer healthchecks to target nodes.
+
+#### chains
+You can use following chains with `#healthcheck`.
+
+- include
+  - Tests if healthchecks include string.
+- from
+  - Tests if healthchecks are from specific address.
+- interval
+  - Tests if healthchecks are at intervals of specific time.
+- port
+  - Tests if healthchecks are on specified port on target nodes.
+- icmp
+  - Tests if healthchecks are icmp.
+- tcp
+  - Tests if healthchecks are tcp.
+- udp
+  - Tests if healthchecks are udp.
 
 ## Requires
 * Users need to be able to login with ssh to the target nodes.
@@ -154,6 +175,14 @@ end
 
 describe 'vhost_c:80/test/' do
   it { should transfer('node_c').http.from('node_a') }
+end
+
+describe 'loadbalancer' do
+  it { should healthcheck('node_c').include('/test/healthcheck').from('192.168.1.1') }
+end
+
+describe 'loadbalancer' do
+  it { should healthcheck('node_c').include('/test/healthcheck').interval(5) }
 end
 
 ```
