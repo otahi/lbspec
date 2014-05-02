@@ -73,8 +73,8 @@ module Lbspec
 
     def exec_capture_command(channel, command)
       whole_data = ''
-      channel.exec command do |ch, stream, data|
-        ch.on_data do |c, d|
+      channel.exec command do |ch, _stream , _data|
+        ch.on_data do |_c, d|
           whole_data << d
           patterns = [@prove]
           patterns << @include_str if @include_str
