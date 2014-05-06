@@ -12,7 +12,7 @@ module Lbspec
     def initialize(nodes, port, prove, include_str = nil)
       @nodes = nodes.respond_to?(:each) ? nodes : [nodes]
       @port = port ? port : 0
-      @prove = prove
+      @prove = prove ? prove : ''
       @include_str = include_str
       @threads = []
       @ssh = []
