@@ -9,9 +9,9 @@ module Lbspec
 
     attr_reader :result, :output
 
-    def initialize(nodes, port, prove, include_str = nil)
+    def initialize(nodes, bpf = nil, prove = nil, include_str = nil)
       @nodes = nodes.respond_to?(:each) ? nodes : [nodes]
-      @port = port ? port : 0
+      @bpf = bpf ? bpf : ''
       @prove = prove ? prove : ''
       @include_str = include_str
       @threads = []
@@ -36,6 +36,20 @@ module Lbspec
       @ssh.each do |ssh|
         ssh.close unless ssh.closed?
       end
+    end
+
+    def self.bpf(options = {})
+      is_first = true
+      filter = ''
+
+      options.each do |k, v|
+        if k && v
+          filter << ' and ' unless is_first
+          filter << k.to_s.gsub('_', ' ') + ' ' + v.to_s
+          is_first = false
+        end
+      end
+      filter
     end
 
     private
@@ -94,8 +108,7 @@ module Lbspec
     end
 
     def capture_command
-      port_str = @port > 0 ? "port #{@port}" : ''
-      "sudo ngrep -W byline #{@prove} #{port_str} | grep -v \"match:\""
+      "sudo ngrep -W byline #{@prove} #{@bpf} | grep -v \"match:\""
     end
   end
 end

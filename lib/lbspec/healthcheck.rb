@@ -5,18 +5,12 @@ require 'rspec/expectations'
 require 'lbspec'
 
 RSpec::Matchers.define :healthcheck do |nodes|
-
-  @include_str = nil
-  @port = 0
-  @path = nil
-  @chain_str = ''
-  @options = {}
-  @output_request = ''
-  @output_capture = ''
-
   match do
+    bpf = Lbspec::Capture.bpf(port:     @port,
+                              src_host: @from,
+                              protocol: @protocol)
     capture =
-      Lbspec::Capture.new(nodes, @port, nil, @include_str)
+      Lbspec::Capture.new(nodes, bpf, nil, @include_str)
     capture.open
     capture.close
     capture.result

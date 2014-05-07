@@ -10,8 +10,9 @@ RSpec::Matchers.define :transfer do |nodes|
     log.debug("#transfer(#{nodes.inspect}) is called")
     @vhost = vhost
     prove = Lbspec::Util.create_prove
+    bpf = Lbspec::Capture.bpf(port: @port)
     capture =
-      Lbspec::Capture.new(nodes, @port, prove, @include_str)
+      Lbspec::Capture.new(nodes, bpf, prove, @include_str)
     capture.open
     request =
       Lbspec::Request.new(vhost, @from,
