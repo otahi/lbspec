@@ -22,7 +22,27 @@ describe '#healthcheck' do
   end
 
   it 'should test loadbalancer healthchecks' do
-    Lbspec::Util.stub(:exec_command).and_return '200 OK'
     'loadbalancer'.should healthcheck('node_a')
+  end
+  it 'should test loadbalancer healthchecks include string' do
+    'loadbalancer'.should healthcheck('node_a').include('X-Test')
+  end
+  it 'should test loadbalancer healthchecks from specified host' do
+    'loadbalancer'.should healthcheck('node_a').from('X-Test')
+  end
+  it 'should test loadbalancer healthchecks at specified interval' do
+    'loadbalancer'.should healthcheck('node_a').interval(5)
+  end
+  it 'should test loadbalancer healthchecks specified port' do
+    'loadbalancer'.should healthcheck('node_a').port(80)
+  end
+  it 'should test loadbalancer healthchecks icmp' do
+    'loadbalancer'.should healthcheck('node_a').icmp
+  end
+  it 'should test loadbalancer healthchecks tcp' do
+    'loadbalancer'.should healthcheck('node_a').tcp
+  end
+  it 'should test loadbalancer healthchecks udp' do
+    'loadbalancer'.should healthcheck('node_a').udp
   end
 end

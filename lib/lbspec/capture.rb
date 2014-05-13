@@ -9,16 +9,14 @@ module Lbspec
 
     attr_reader :result, :output
 
-    def initialize(nodes, bpf = nil, prove = nil, include_str = nil)
+    def initialize(nodes, bpf = nil, prove = nil, include_str = nil,
+                   term_sec = nil)
       @nodes = nodes.respond_to?(:each) ? nodes : [nodes]
       @bpf = bpf ? bpf : ''
       @prove = prove ? prove : ''
       @include_str = include_str
-      @threads = []
-      @ssh = []
-      @nodes_connected = []
-      @result = false
-      @output = []
+      @term_sec = term_sec ? term_sec : -1
+      set_initial_value
       Util.log.debug("#{self.class} initialized #{inspect}")
     end
 
@@ -54,6 +52,12 @@ module Lbspec
 
     private
 
+    def set_initial_value
+      @threads, @ssh, @nodes_connected = [], [], []
+      @result = false
+      @output = []
+    end
+
     def open_node(node)
       @threads << Thread.new do
         Net::SSH.start(node, nil, config: true) do |ssh|
@@ -87,18 +91,24 @@ module Lbspec
 
     def exec_capture_command(channel, command)
       whole_data = ''
+      start_sec = Time.now.to_i
       channel.exec command do |ch, _stream , _data|
         ch.on_data do |_c, d|
           whole_data << d
-          patterns = [@prove]
-          patterns << @include_str if @include_str
-          @result = match_all?(whole_data, patterns)
+          @result = match_all?(whole_data)
+          break if capture_done?(Time.now.to_i, start_sec)
         end
       end
       whole_data
     end
 
-    def match_all?(string, patterns)
+    def capture_done?(now_sec, start_sec)
+      (@term_sec > 0 && now_sec - start_sec > @term_sec) ? true : @result
+    end
+
+    def match_all?(string)
+      patterns = [@prove]
+      patterns << @include_str if @include_str
       num_patterns, num_match = 0, 0
       patterns.each do |pat|
         num_patterns += 1
