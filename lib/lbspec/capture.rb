@@ -96,8 +96,8 @@ module Lbspec
         ch.on_data do |_c, d|
           whole_data << d
           @result = match_all?(whole_data)
-          break if capture_done?(Time.now.to_i, start_sec)
         end
+        break if capture_done?(Time.now.to_i, start_sec)
       end
       whole_data
     end
