@@ -27,7 +27,7 @@ RSpec::Matchers.define :healthcheck do |nodes|
   end
 
   chain :interval do |second|
-    @interval = second * 2
+    @interval = second
     @chain_str = Lbspec::Util.add_string(@chain_str,
                                          " at interval of #{second} sec")
   end
