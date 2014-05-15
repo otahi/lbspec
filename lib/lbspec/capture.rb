@@ -9,27 +9,24 @@ module Lbspec
 
     attr_reader :result, :output
 
-    def initialize(nodes, port, prove, include_str = nil)
+    def initialize(nodes, bpf = nil, prove = nil, include_str = nil,
+                   term_sec = nil)
       @nodes = nodes.respond_to?(:each) ? nodes : [nodes]
-      @port = port ? port : 0
-      @prove = prove
+      @bpf = bpf ? bpf : ''
+      @prove = prove ? prove : ''
       @include_str = include_str
-      @threads = []
-      @ssh = []
-      @nodes_connected = []
-      @result = false
-      @output = []
+      @term_sec = term_sec ? term_sec : -1
+      set_initial_value
       Util.log.debug("#{self.class} initialized #{inspect}")
     end
 
     def open
-      @nodes.each do |node|
-        open_node(node)
-      end
+      @nodes.each { |node| open_node(node) }
       wait_connected
     end
 
     def close
+      sleep 0.5 until capture_done?
       @threads.each do |t|
         t.kill
       end
@@ -38,7 +35,27 @@ module Lbspec
       end
     end
 
+    def self.bpf(options = {})
+      is_first = true
+      filter = ''
+
+      options.each do |k, v|
+        if k && v
+          filter << ' and ' unless is_first
+          filter << k.to_s.gsub('_', ' ') + ' ' + v.to_s
+          is_first = false
+        end
+      end
+      filter
+    end
+
     private
+
+    def set_initial_value
+      @threads, @ssh, @nodes_connected = [], [], []
+      @result = false
+      @output = []
+    end
 
     def open_node(node)
       @threads << Thread.new do
@@ -73,18 +90,25 @@ module Lbspec
 
     def exec_capture_command(channel, command)
       whole_data = ''
+      @start_sec = Time.now.to_i + 1
       channel.exec command do |ch, _stream , _data|
         ch.on_data do |_c, d|
           whole_data << d
-          patterns = [@prove]
-          patterns << @include_str if @include_str
-          @result = match_all?(whole_data, patterns)
+          @result = match_all?(whole_data)
         end
+        break if capture_done?
       end
       whole_data
     end
 
-    def match_all?(string, patterns)
+    def capture_done?
+      now_sec = Time.now.to_i
+      (@term_sec > 0 && now_sec - @start_sec > @term_sec) ? true : @result
+    end
+
+    def match_all?(string)
+      patterns = [@prove]
+      patterns << @include_str if @include_str
       num_patterns, num_match = 0, 0
       patterns.each do |pat|
         num_patterns += 1
@@ -94,8 +118,7 @@ module Lbspec
     end
 
     def capture_command
-      port_str = @port > 0 ? "port #{@port}" : ''
-      "sudo ngrep -W byline #{@prove} #{port_str} | grep -v \"match:\""
+      "sudo ngrep -W byline #{@prove} #{@bpf} | grep -v \"match:\""
     end
   end
 end
