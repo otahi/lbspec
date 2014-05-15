@@ -21,13 +21,12 @@ module Lbspec
     end
 
     def open
-      @nodes.each do |node|
-        open_node(node)
-      end
+      @nodes.each { |node| open_node(node) }
       wait_connected
     end
 
     def close
+      sleep 0.5 until capture_done?
       @threads.each do |t|
         t.kill
       end
@@ -91,19 +90,20 @@ module Lbspec
 
     def exec_capture_command(channel, command)
       whole_data = ''
-      start_sec = Time.now.to_i
+      @start_sec = Time.now.to_i + 1
       channel.exec command do |ch, _stream , _data|
         ch.on_data do |_c, d|
           whole_data << d
           @result = match_all?(whole_data)
         end
-        break if capture_done?(Time.now.to_i, start_sec)
+        break if capture_done?
       end
       whole_data
     end
 
-    def capture_done?(now_sec, start_sec)
-      (@term_sec > 0 && now_sec - start_sec > @term_sec) ? true : @result
+    def capture_done?
+      now_sec = Time.now.to_i
+      (@term_sec > 0 && now_sec - @start_sec > @term_sec) ? true : @result
     end
 
     def match_all?(string)
