@@ -15,7 +15,7 @@ module Lbspec
       @bpf = bpf ? bpf : ''
       @prove = prove ? prove : ''
       @include_str = include_str
-      @term_sec = term_sec ? term_sec : -1
+      @term_sec = term_sec ? term_sec : 5
       set_initial_value
       Util.log.debug("#{self.class} initialized #{inspect}")
     end
