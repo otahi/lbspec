@@ -1,0 +1,30 @@
+# -*- mode: ruby -*-
+
+VAGRANTFILE_API_VERSION = "2"
+
+
+$script = <<SCRIPT
+which docker.io || apt-get update
+which docker.io || apt-get install -y docker.io
+which docker.io || apt-get clean
+
+sudo docker.io pull otahi/vagrant_ssh
+sudo docker.io stop src_node dst_node
+sudo docker.io rm src_node dst_node
+sudo docker.io run -p 10022:22 -d --name src_node otahi/vagrant_ssh
+sudo docker.io run -p 20022:22 -d --name dst_node --link=src_node:src_node otahi/vagrant_ssh
+SCRIPT
+
+Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
+  config.vm.box = 'ubuntu14.04'
+
+  config.vm.provider "virtualbox" do |_v|
+    config.vm.box_url =
+      'http://cloud-images.ubuntu.com/vagrant/trusty/current/trusty-server-cloudimg-amd64-vagrant-disk1.box'
+  end
+  config.vm.network "private_network", ip: "192.168.254.254"
+  config.vm.network "forwarded_port", guest: 10022, host: 10022, protocol: 'tcp'
+  config.vm.network "forwarded_port", guest: 20022, host: 20022, protocol: 'tcp'
+
+  config.vm.provision "shell", inline: $script
+end
