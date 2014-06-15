@@ -11,8 +11,8 @@ which docker.io || apt-get clean
 sudo docker.io pull otahi/vagrant_ssh
 sudo docker.io stop src_node dst_node
 sudo docker.io rm src_node dst_node
-sudo docker.io run -p 10022:22 -d --name src_node otahi/vagrant_ssh
-sudo docker.io run -p 20022:22 -d --name dst_node --link=src_node:src_node otahi/vagrant_ssh
+sudo docker.io run -p 20022:22 -d --name dst_node otahi/vagrant_ssh
+sudo docker.io run -p 10022:22 -d --name src_node --link=dst_node:dst_node otahi/vagrant_ssh
 SCRIPT
 
 Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
