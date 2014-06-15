@@ -49,7 +49,8 @@ module Lbspec
     def self.exec_command_remote(command, node = nil)
       output = command + "\n"
       log.debug("ssh to #{node}:#{command}")
-      options = { config: true, verbose: log_level }
+      config_files = %w(./ssh_config) << Net::SSH::Config.default_files
+      options = { config: config_files, verbose: log_level }
       Net::SSH.start(node, ssh_user(node), options) do |ssh|
         output << ssh.exec!(command).to_s
       end
