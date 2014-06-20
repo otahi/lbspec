@@ -1,9 +1,9 @@
-Host src_node
+Host srcnode
   Port 10022
-Host src_node
+Host dstnode
   Port 20022
 Host *
-  HostName 127.0.0.1
+  HostName 192.168.254.254
   User root
   UserKnownHostsFile /dev/null
   StrictHostKeyChecking no
@@ -11,4 +11,3 @@ Host *
   IdentityFile /Users/otahi/.vagrant.d/insecure_private_key
   IdentitiesOnly yes
   LogLevel FATAL
-
