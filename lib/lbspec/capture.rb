@@ -40,11 +40,11 @@ module Lbspec
       filter = ''
 
       options.each do |k, v|
-        if k && v
-          filter << ' and ' unless is_first
-          filter << k.to_s.gsub('_', ' ') + ' ' + v.to_s
-          is_first = false
-        end
+        next unless k && v
+
+        filter << ' and ' unless is_first
+        filter << k.to_s.gsub('_', ' ') + ' ' + v.to_s
+        is_first = false
       end
       filter
     end
