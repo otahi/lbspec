@@ -3,7 +3,7 @@
 VAGRANTFILE_API_VERSION = "2"
 
 $ruby_install_script = <<SCRIPT
-ruby --version | grep 2.0 && exit 0
+sudo -u vagrant -i ruby --version | grep 2.0 && exit 0
 sudo groupadd rbenv
 sudo gpasswd -a vagrant rbenv
 sudo apt-get install -y git build-essential libssl-dev
@@ -43,6 +43,8 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
       'http://cloud-images.ubuntu.com/vagrant/trusty/current/trusty-server-cloudimg-amd64-vagrant-disk1.box'
   end
   config.vm.network "private_network", ip: "192.168.254.254"
+
+  config.vm.synced_folder('../', '/home/vagrant/lbspec',type: "rsync")
 
   config.vm.provision "shell", inline: $ruby_install_script
   config.vm.provision "shell", inline: $docker_script
