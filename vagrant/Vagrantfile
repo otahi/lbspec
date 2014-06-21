@@ -2,8 +2,30 @@
 
 VAGRANTFILE_API_VERSION = "2"
 
+$ruby_install_script = <<SCRIPT
+ruby --version | grep 2.0 && exit 0
+sudo groupadd rbenv
+sudo gpasswd -a vagrant rbenv
+sudo apt-get install -y git build-essential libssl-dev
+cd /opt
+ls rbenv || sudo git clone git://github.com/sstephenson/rbenv.git rbenv
+mkdir -p /opt/rbenv/plugins
+cd /opt/rbenv/plugins
+ls ruby-build || git clone git://github.com/sstephenson/ruby-build.git
+cd /opt
+sudo chgrp -R rbenv rbenv
+sudo chmod -R g+rwxXs rbenv
+sudo -u vagrant grep rbenv ~vagrant/.bash_profile ||( \
+  sudo -u vagrant echo 'export RBENV_ROOT=/opt/rbenv' >> ~vagrant/.bash_profile ;
+  sudo -u vagrant echo 'export PATH="$RBENV_ROOT/bin:$PATH"' >> ~vagrant/.bash_profile ;
+  sudo -u vagrant echo 'eval "$(rbenv init -)"' >> ~vagrant/.bash_profile )
+sudo -u vagrant -i rbenv install 2.0.0-p481
+sudo -u vagrant -i rbenv rehash
+sudo -u vagrant -i rbenv global 2.0.0-p481
+SCRIPT
 
-$script = <<SCRIPT
+
+$docker_script = <<SCRIPT
 docker version | grep 'Client version: 1.' || curl -s https://get.docker.io/ubuntu/ | sudo sh
 
 sudo docker pull otahi/lbspec-test
@@ -22,5 +44,6 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
   end
   config.vm.network "private_network", ip: "192.168.254.254"
 
-  config.vm.provision "shell", inline: $script
+  config.vm.provision "shell", inline: $ruby_install_script
+  config.vm.provision "shell", inline: $docker_script
 end
