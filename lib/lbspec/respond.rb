@@ -78,9 +78,10 @@ RSpec::Matchers.define :respond do |expect|
   end
 
   def result_string(negative = false)
-    negation = negative ? ' not' : ''
-    result =  "expected #{@vhost}#{negation} to respond #{@expect}"
-    result <<  ", but did#{negation}.\n" + "requested:\n"
+    neg_expect = negative ? ' not' : ''
+    neg_actual = negative ? '' : ' not'
+    result =  "expected #{@vhost}#{neg_expect} to respond #{@expect}"
+    result <<  ", but did#{neg_actual}.\n" + "requested:\n"
     result << @output_request.gsub(/^/, '  ')
   end
 

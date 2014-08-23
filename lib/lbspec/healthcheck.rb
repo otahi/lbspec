@@ -70,10 +70,11 @@ RSpec::Matchers.define :healthcheck do |nodes|
   end
 
   def result_string(negative = false)
-    negation = negative ? '' : ' not'
-    result = "expected #{@lb} to healthcheck to"
+    neg_expect = negative ? ' not' : ''
+    neg_actual = negative ? '' : ' not'
+    result = "expected #{@lb} #{neg_expect} to healthcheck to"
     result << @nodes.to_s + @chain_str
-    result << ", but did#{negation}.\n"
+    result << ", but did#{neg_actual}.\n"
     result << "\ncaptured:\n"
     result << result_capture
     result
