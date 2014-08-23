@@ -82,18 +82,13 @@ module Lbspec
     end
 
     def exec_capture(channel)
-      output = exec_capture_command(channel, capture_command)
-      capture_command + "\n" +  output.to_s
-    end
-
-    def exec_capture_command(channel, command)
       whole_data = ''
       @start_sec = Time.now.to_i + 1
-      channel.exec command do |ch, _stream, _data|
+      channel.exec(capture_command) do |ch, _stream, _data|
         receive_data(ch, whole_data)
         break if capture_done?
       end
-      whole_data
+      capture_command + "\n" + whole_data
     end
 
     def receive_data(channel, data)
