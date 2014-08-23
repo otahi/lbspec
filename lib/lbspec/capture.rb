@@ -51,7 +51,7 @@ module Lbspec
     private
 
     def set_initial_value
-      @threads, @ssh, @nodes_connected = [], [], []
+      @threads, @ssh, @nodes_connected = [], [], {}
       @result = false
       @output = []
     end
@@ -76,7 +76,6 @@ module Lbspec
       output = ''
       channel.request_pty do |chan, success|
         fail 'Could not obtain pty' unless success
-        @nodes_connected.push(true)
         output = exec_capture(chan)
       end
       output
@@ -91,13 +90,19 @@ module Lbspec
       whole_data = ''
       @start_sec = Time.now.to_i + 1
       channel.exec command do |ch, _stream, _data|
-        ch.on_data do |_c, d|
-          whole_data << d
-          @result = match_all?(whole_data)
-        end
+        receive_data(ch, whole_data)
         break if capture_done?
       end
       whole_data
+    end
+
+    def receive_data(channel, data)
+      channel.on_data do |_c, d|
+        @nodes_connected.merge!(Thread.current.to_s => true)
+        data << d
+        @result = match_all?(data)
+      end
+      data
     end
 
     def capture_done?
