@@ -40,11 +40,10 @@ module Lbspec
       filter = ''
 
       options.each do |k, v|
-        if k && v
-          filter << ' and ' unless is_first
-          filter << k.to_s.gsub('_', ' ') + ' ' + v.to_s
-          is_first = false
-        end
+        next unless k && v
+        filter << ' and ' unless is_first
+        filter << k.to_s.gsub('_', ' ') + ' ' + v.to_s
+        is_first = false
       end
       filter
     end
@@ -91,7 +90,7 @@ module Lbspec
     def exec_capture_command(channel, command)
       whole_data = ''
       @start_sec = Time.now.to_i + 1
-      channel.exec command do |ch, _stream , _data|
+      channel.exec command do |ch, _stream, _data|
         ch.on_data do |_c, d|
           whole_data << d
           @result = match_all?(whole_data)
