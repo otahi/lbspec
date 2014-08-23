@@ -88,7 +88,7 @@ Lbspec::Util.logger = Logger.new('test.log')
 ```
 
 The default Logger show Logger::ERROR level on STDOUT.
-=======
+
 ### #haelthcheck
 `#healthcheck` tests if a load balancer healthchecks to target nodes.
 
