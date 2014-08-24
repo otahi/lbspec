@@ -5,6 +5,102 @@ Lbspec is an RSpec plugin for easy Loadbalancer testing.
 [![Build Status](https://travis-ci.org/otahi/lbspec.png?branch=master)](https://travis-ci.org/otahi/lbspec)
 [![Coverage Status](https://coveralls.io/repos/otahi/lbspec/badge.png?branch=master)](https://coveralls.io/r/otahi/lbspec?branch=master)
 [![Gem Version](https://badge.fury.io/rb/lbspec.png)](http://badge.fury.io/rb/lbspec)
+
+## Usage
+
+Lbspec is best described by example. First, require `lbspec` in your `spec_helper.rb`:
+
+```ruby
+# spec/spec_helper.rb
+require 'lbspec'
+```
+
+Then, create a spec like this:
+
+```ruby
+require_relative 'spec_helper'
+
+describe 'vhost_a' do
+  it { should transfer('node_a') }
+  it { should respond('200 OK') }
+end
+
+describe 'vhost_b' do
+  it { should transfer(%w(node_b node_c)) }
+  it { should respond('200 OK') }
+end
+
+describe 'vhost_c:80' do
+  it { should transfer(%w(node_b node_c)).port(80) }
+  it { should respond('404') }
+end
+
+describe 'vhost_c:80' do
+  it { should transfer(%w(node_b node_c)).port(53).udp }
+end
+
+describe 'vhost_c:80/test/' do
+  it { should transfer('node_c').http }
+  it { should respond('200 OK').http }
+end
+
+describe 'vhost_c:443' do
+  it { should transfer(%w(node_b node_c)).port(80).https.path('/test/') }
+  it { should respond('200 OK').https.path('/test/') }
+end
+
+describe 'vhost_c:443/test/' do
+  it do
+    should transfer(%w(node_b node_c)).port(80).https
+      .options(ignore_valid_ssl: true)
+  end
+  it do should respond('200 OK').path('/test/').https
+      .options(ignore_valid_ssl: true)
+  end
+end
+
+describe 'vhost_c:80/test/' do
+  it { should transfer('node_c').http.from('node_a') }
+end
+
+describe 'loadbalancer' do
+  it do should healthcheck('node_c')
+      .include('/test/healthcheck').from('192.168.1.1')
+  end
+end
+
+describe 'loadbalancer' do
+  it { should healthcheck('node_c').include('/test/healthcheck').interval(5) }
+end
+```
+
+You will get a result:
+```
+$ bundle exec rspec spec.rb
+
+vhost_a
+  should transfer requests to node_a.
+  should respond 200 OK.
+vhost_b
+  should transfer requests to ["node_b", "node_c"].
+  should respond 200 OK.
+vhost_c:80
+  should transfer requests to ["node_b", "node_c"] port 80.
+  should respond 404.
+vhost_c:80
+  should transfer requests to ["node_b", "node_c"] port 53 udp.
+vhost_c:80/test/
+  should transfer requests to node_c http.
+  should respond 200 OK http.
+vhost_c:443
+  should transfer requests to ["node_b", "node_c"] port 80 https via /test/.
+  should respond 200 OK https via /test/.
+vhost_c:443/test/
+  should transfer requests to ["node_b", "node_c"] port 80 https.
+  should respond 200 OK
+```
+
+
 ## Installation
 
 Add this line to your application's Gemfile:
@@ -119,73 +215,6 @@ You can use following chains with `#healthcheck`.
 ## Limitations
 * Lbspec uses only ssh configuration in ~/.ssh/config
 
-## Usage
-
-Lbspec is best described by example. First, require `lbspec` in your `spec_helper.rb`:
-
-```ruby
-# spec/spec_helper.rb
-require 'rspec'
-require 'lbspec'
-```
-
-Then, create a spec like this:
-
-```ruby
-require_relative 'spec_helper'
-
-describe 'vhost_a' do
-  it { should transfer('node_a') }
-  it { should respond('200 OK') }
-end
-
-describe 'vhost_b' do
-  it { should transfer(['node_b','node_c']) }
-  it { should respond('200 OK') }
-end
-
-describe 'vhost_c:80' do
-  it { should transfer(['node_b','node_c']).port(80) }
-  it { should respond('404') }
-end
-
-describe 'vhost_c:80' do
-  it { should transfer(['node_b','node_c']).port(53).udp }
-end
-
-describe 'vhost_c:80/test/' do
-  it { should transfer('node_c').http }
-  it { should respond('200 OK').http }
-end
-
-describe 'vhost_c:443' do
-  it { should transfer(['node_b','node_c']).port(80).https.path('/test/' }
-  it { should respond('200 OK').https.path('/test/') }
-end
-
-describe 'vhost_c:443/test/' do
-  it do
-    should transfer(['node_b','node_c']).port(80).https
-      .options(ignore_valid_ssl: true)
-  end
-  it do should respond('200 OK').path('/test/').https
-      .options(ignore_valid_ssl: true)
-  end
-end
-
-describe 'vhost_c:80/test/' do
-  it { should transfer('node_c').http.from('node_a') }
-end
-
-describe 'loadbalancer' do
-  it { should healthcheck('node_c').include('/test/healthcheck').from('192.168.1.1') }
-end
-
-describe 'loadbalancer' do
-  it { should healthcheck('node_c').include('/test/healthcheck').interval(5) }
-end
-
-```
 ## How it works
 ### #transfer
 
