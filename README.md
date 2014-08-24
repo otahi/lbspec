@@ -98,6 +98,16 @@ vhost_c:443
 vhost_c:443/test/
   should transfer requests to ["node_b", "node_c"] port 80 https.
   should respond 200 OK
+vhost_c:80/test/
+  should transfer requests to node_c http from node_a.
+loadbalancer
+  should healthcheck node_c including /test/healthcheck from 192.168.1.1.
+loadbalancer
+  should healthcheck node_c including /test/healthcheck at interval of 5 sec.
+
+Finished in 5.1 seconds
+16 examples, 0 failures
+$
 ```
 
 
