@@ -117,7 +117,7 @@ module Lbspec
     end
 
     def capture_command
-      "sudo ngrep -W byline #{@prove} #{@bpf} | grep -v \"match:\""
+      %Q(sudo ngrep -W byline "#{@prove}" #{@bpf} | grep -v "match:")
     end
   end
 end
