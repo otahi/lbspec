@@ -37,19 +37,19 @@ module Lbspec
 
     def send_http(prove)
       @port = 80 unless @port
-      uri = 'http://' + "#{@addr}:#{@port}#{@path}?#{prove}"
-      command = build_curl_command(uri, @options)
+      uri = 'http://' + "#{@addr}:#{@port}#{@path}"
+      command = build_curl_command(uri, prove, @options)
       Lbspec::Util.exec_command(command, @from)
     end
 
     def send_https(prove)
       @port = 443 unless @port == 0
-      uri = 'https://' + "#{@addr}:#{@port}#{@path}?#{prove}"
-      command = build_curl_command(uri, @options)
+      uri = 'https://' + "#{@addr}:#{@port}#{@path}"
+      command = build_curl_command(uri, prove, @options)
       Lbspec::Util.exec_command(command, @from)
     end
 
-    def build_curl_command(uri, options = {})
+    def build_curl_command(uri, prove, options = {})
       env, opt = '', ''
       opt << (options[:timeout] ? " -m #{options[:timeout]}" : '')
       opt << (options[:ignore_valid_ssl] ? ' -k' : '')
@@ -59,7 +59,7 @@ module Lbspec
         env << %Q(NO_PROXY="#{options[:noproxy]}" )
       end
       opt << header_option(options[:header])
-      "#{env}curl -v -i -s #{opt} '#{uri}'"
+      "#{env}curl -v -i -H 'X-Lbspec-Prove: #{prove}' -s #{opt} '#{uri}'"
     end
 
     def header_option(header)
