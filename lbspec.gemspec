@@ -22,9 +22,8 @@ Gem::Specification.new do |spec|
   spec.add_development_dependency "rake", "~> 10.2"
   spec.add_development_dependency 'rubocop', '0.24.1'
   spec.add_development_dependency "coveralls", "~> 0.7"
-  spec.add_development_dependency "debugger", "~> 1.6"
   spec.add_development_dependency "highline", "~> 1.6"
 
-  spec.add_runtime_dependency "rspec", "~> 2.14"
+  spec.add_runtime_dependency "rspec", "~> 3.1"
   spec.add_runtime_dependency "net-ssh", "~> 2.8"
 end
