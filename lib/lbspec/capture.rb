@@ -58,7 +58,8 @@ module Lbspec
 
     def open_node(node)
       @threads << Thread.new do
-        Net::SSH.start(node, nil, config: true) do |ssh|
+        user = Util.ssh_user(node)
+        Net::SSH.start(node, user, config: true) do |ssh|
           @ssh << ssh
           ssh.open_channel do |channel|
             output = run_check channel

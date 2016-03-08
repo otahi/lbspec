@@ -67,7 +67,7 @@ module Lbspec
       # if there is no user for the node in ~/.ssh/config
       # use current user name for login
       user = Net::SSH::Config.for(node)[:user]
-      user ? user : `whoami`.chomp
+      user = user ? user : `whoami`.chomp
       log.debug("ssh #{node} as user:#{user}")
       user
     end
